@@ -1,0 +1,57 @@
+.navbar {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.navbar h1 {
+  font-weight: bolder;
+  font-size: 30px;
+  color: #100f57;
+}
+
+.navbar .links {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.navbar button {
+  margin-left: 16px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #100f57; /* Change the font color */
+  background-color: #653ae6;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.navbar button:hover {
+  background-color: #0e3a64;
+  color: #fff; /* Change the font color on hover */
+}
+
+
+.search-container {
+  display: flex;
+  align-items: center;
+  margin: 1rem 0;
+}
+
+.search-container input {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.search-container button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: 0.5rem;
+}

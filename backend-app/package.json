@@ -1,0 +1,26 @@
+{
+  "name": "backend-app",
+  "version": "1.0.0",
+  "description": "A backend application using Express and MySQL.",
+  "main": "src/app.ts",
+  "scripts": {
+    "start": "ts-node src/app.ts",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.12.0",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.11",
+    "@types/mysql": "^2.15.17"
+  },
+  "author": "",
+  "license": "ISC"
+}
