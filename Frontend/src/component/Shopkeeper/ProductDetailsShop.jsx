@@ -22,7 +22,7 @@ const ProductDetailsShop = ({ deleteProduct }) => {
         <div className={`product-details-page ${isDeleting ? 'fade-out' : ''}`}>
             <div className="product-container">
                 <div className="product-image-section">
-                    <img src={product.image} alt={product.name} />
+                    <img src={product.imageUrl} alt={product.name} />
                 </div>
                 <div className="product-info-section">
                     <h2>{product.name}</h2>

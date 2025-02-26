@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AddProduct.css';
+import axios from 'axios';
 
 const AddProduct = ({ products, setProducts }) => {
+
+
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
@@ -30,20 +33,22 @@ const AddProduct = ({ products, setProducts }) => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit =async (e) => {
     e.preventDefault();
-    const newProduct = {
-      id: products.length + 1,
-      name: formData.name,
-      quantity: formData.quantity,
-      price: parseFloat(formData.price), // Ensure price is a number
-      discount: formData.discount,
-      manufactureDate: formData.manufactureDate,
-      expiryDate: formData.expiryDate,
-      image: formData.imageUrl || URL.createObjectURL(formData.imageFile)
-    };
-    setProducts([...products, newProduct]);
-    navigate('/');
+    // const newProduct = {
+    //   id: products.length + 1,
+    //   name: formData.name,
+    //   quantity: formData.quantity,
+    //   price: parseFloat(formData.price), // Ensure price is a number
+    //   discount: formData.discount,
+    //   manufactureDate: formData.manufactureDate,
+    //   expiryDate: formData.expiryDate,
+    //   image: formData.imageUrl || URL.createObjectURL(formData.imageFile)
+    // };
+    // setProducts([...products, newProduct]);
+    // navigate('/');
+    const res=await axios.post('http://localhost:3000/api/products/add',formData);
+    console.log(res.data)
   };
 
   return (

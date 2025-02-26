@@ -48,7 +48,7 @@ const ProductDetailsCust = ({ addToCart, addToWishlist, updateCartQuantity, cart
                 <div className="wishlist-button" onClick={handleAddToWishlist}>
                     <PiHeartFill />
                 </div>
-                <img src={product.image} alt={product.name} className="product-image" />
+                <img src={product.imageUrl} alt={product.name} className="product-image" />
             </div>
             <div className="right-side">
                 <h1>{product.name}</h1>

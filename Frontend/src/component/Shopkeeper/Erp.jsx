@@ -3,11 +3,14 @@ import { Html5QrcodeScanner } from 'html5-qrcode';
 import Barcodegen from './Barcodegen';
 import Qrcodegen from './Qrcodegen';
 import './Erp.css';
+import axios from 'axios';
 
 const Erp = () => {
     const [rows, setRows] = useState([]);
     const [showActionPopup, setShowActionPopup] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [products, setProduct] = useState([]);
+
     
     const [formData, setFormData] = useState({
         slno: 1,
@@ -53,20 +56,39 @@ const Erp = () => {
         }
     };
 
-    const handleAdd = (e) => {
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const response = await axios.get('http://localhost:3000/api/products/get');
+                if(response.data.success){
+                setProduct(response.data.products || []);
+                console.log(response.data,"ress");
+                console.log(products,"products");
+                }
+            } catch (error) {
+                console.error('Error fetching products:', error);
+            }
+        };
+        fetchProducts();
+    }, [setProduct]);
+
+    const handleAdd = async(e) => {
         e.preventDefault();
-        const total = (formData.price * formData.quantity) - (formData.price * formData.quantity * (formData.discount / 100));
-        setRows([...rows, { ...formData, total }]);
-        setFormData({
-            slno: formData.slno + 1,
-            pname: '',
-            quantity: '',
-            price: '',
-            discount: '',
-            total: '',
-            manufactureDate: '',
-            expiryDate: ''
-        });
+        // const total = (formData.price * formData.quantity) - (formData.price * formData.quantity * (formData.discount / 100));
+        // setRows([...rows, { ...formData, total }]);
+        // setFormData({
+        //     slno: formData.slno + 1,
+        //     pname: '',
+        //     quantity: '',
+        //     price: '',
+        //     discount: '',
+        //     total: '',
+        //     manufactureDate: '',
+        //     expiryDate: ''
+        // });
+
+        const res=await axios.post('http://localhost:3000/api/billings/add',formData);
+        console.log(res.data);
     };
 
     const handleGenerateBarcode = (product) => {
@@ -232,6 +254,25 @@ const Erp = () => {
                     <label htmlFor="pname">Product Name:</label>
                     <input type="text" id="pname" name="pname" value={formData.pname} onChange={handleChange} required />
                     
+                    
+                    {/* <label htmlFor="pname">Product Name:</label>
+                    <select 
+                id="pname" 
+                name="pname" 
+                value={formData.pname} 
+                onChange={handleChange}
+                required
+                className="form-select"
+            >
+                <option value="">Select a product</option>
+                {products.map((product) => (
+                    <option key={product._id} value={product.name}>
+                        {product.name}
+                    </option>
+                ))}
+            </select> */}
+
+
                     <label htmlFor="quantity">Quantity:</label>
                     <input type="number" id="quantity" name="quantity" value={formData.quantity} onChange={handleChange} required />
                     

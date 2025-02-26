@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './HomeShop.css';
 
@@ -9,13 +9,23 @@ const HomeShop = ({ products, setProducts }) => {
         navigate(`/product/${product.id}`, { state: { product } });
     };
 
+    useEffect(() => {
+        const fetchProducts = async () => {
+            const res = await fetch('http://localhost:3000/api/products/get');
+            const data = await res.json();
+            setProducts(data.data);
+        };
+        fetchProducts();
+    }
+    , [setProducts]);
+
     return (
         <div className="home">
             <h2>Welcome to Our E-commerce Store</h2>
             <div className="product-list">
-                {products.map(product => (
-                    <div className="product-card" key={product.id} onClick={() => handleProductClick(product)}>
-                        <img src={product.image} alt={product.name} />
+                {products.map((product,id) => (
+                    <div className="product-card" key={id} onClick={() => handleProductClick(product)}>
+                        <img src={product.imageUrl} alt={product.name} />
                         <div className="product-info">
                             <h3>{product.name}</h3>
                             <div className="price-info">
