@@ -8,7 +8,9 @@ const productSchema = new mongoose.Schema({
     discount: { type: Number, required: true },
     expiryDate: { type: Date, required: true },
     manufactureDate: { type: Date, required: true },
-    imageUrl: { type: String, required: false }
+    imageUrl: { type: String, required: false },
+    category: { type: String, required: true },
+    description: { type: String, required: false }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Product', productSchema);

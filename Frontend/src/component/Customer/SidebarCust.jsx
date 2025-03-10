@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import './SidebarCust.css';
 
 const SidebarCust = () => {
@@ -7,25 +7,25 @@ const SidebarCust = () => {
     <div className="sidebar">
       <ul>
         <li>
-          <NavLink to="/" className={({ isActive }) => (isActive ? 'active' : '')}>Home</NavLink>
+          <Link to="/customer/" className={({ isActive }) => (isActive ? 'active' : '')}>Home</Link>
         </li>
         <li>
-          <NavLink to="/cart" className={({ isActive }) => (isActive ? 'active' : '')}>Cart</NavLink>
+          <Link to="/customer/cart" className={({ isActive }) => (isActive ? 'active' : '')}>Cart</Link>
         </li>
         <li>
-          <NavLink to="/bill" className={({ isActive }) => (isActive ? 'active' : '')}>Order</NavLink>
+          <Link to="/customer/checkout" className={({ isActive }) => (isActive ? 'active' : '')}>Order</Link>
         </li>
         <li>
-          <NavLink to="/profile" className={({ isActive }) => (isActive ? 'active' : '')}>Profile</NavLink>
+          <Link to="/customer/profile" className={({ isActive }) => (isActive ? 'active' : '')}>Profile</Link>
         </li>
         <li>
-          <NavLink to="/settings" className={({ isActive }) => (isActive ? 'active' : '')}>Settings</NavLink>
+          <Link to="/customer/settings" className={({ isActive }) => (isActive ? 'active' : '')}>Settings</Link>
         </li>
         <li>
-          <NavLink to="/about" className={({ isActive }) => (isActive ? 'active' : '')}>About</NavLink>
+          <Link to="/customer/about" className={({ isActive }) => (isActive ? 'active' : '')}>About</Link>
         </li>
         <li>
-          <NavLink to="/other" className={({ isActive }) => (isActive ? 'active' : '')}>Other</NavLink>
+          <Link to="/customer/other" className={({ isActive }) => (isActive ? 'active' : '')}>Other</Link>
         </li>
       </ul>
     </div>

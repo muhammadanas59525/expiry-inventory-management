@@ -1,42 +1,83 @@
 .add-product {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    background-color: #f9f9f9;
-  }
-  
-  .add-product h2 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .add-product form {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .add-product label {
-    margin-bottom: 5px;
-  }
-  
-  .add-product input {
-    margin-bottom: 15px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  .add-product button {
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .add-product button:hover {
-    background-color: #0056b3;
-  }
+  /* max-width: 600px; */
+  /* margin: 0 auto; */
+  /* margin-top: 100px; */
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+  width: 70vw;
+  height:83vh;
+  overflow-y: scroll;
+}
+
+.add-product h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.add-product form {
+  display: flex;
+  flex-direction: column;
+}
+
+.add-product label {
+  margin-bottom: 5px;
+}
+
+.add-product input {
+  margin-bottom: 15px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.add-product button {
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.add-product button:hover {
+  background-color: #0056b3;
+}
+/* Add to AddProduct.css */
+
+.success-alert {
+background-color: #e6ffe6;
+border-left: 4px solid #4CAF50;
+color: #333;
+padding: 10px 15px;
+margin-bottom: 20px;
+border-radius: 4px;
+animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+to {
+  opacity: 1;
+  transform: translateY(0);
+}
+}
+/* Add this to your CSS file */
+select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: white;
+}
+
+select:focus {
+  outline: none;
+  border-color: #4a90e2;
+}

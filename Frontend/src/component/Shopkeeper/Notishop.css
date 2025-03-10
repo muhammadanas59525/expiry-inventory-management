@@ -1,0 +1,68 @@
+.notification-container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 20px auto; /* Add margin to the top and bottom */
+}
+
+.notification-list {
+    margin-top: 20px;
+}
+
+.notification-item {
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.notification-item.expired.high {
+    background-color: #ffe6e6;
+    border-left: 4px solid #ff4444;
+}
+
+.notification-item.warning.medium {
+    background-color: #fff3e6;
+    border-left: 4px solid #ffa500;
+}
+
+.notification-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notification-message {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.notification-date {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.error-message {
+    color: #ff4444;
+    text-align: center;
+    padding: 20px;
+}
+
+.no-notifications {
+    text-align: center;
+    color: #666;
+}
+/* Add to Notishop.css */
+
+.notification-item {
+    cursor: pointer;
+    transition: transform 0.1s ease-in-out, box-shadow 0.2s ease;
+}
+
+.notification-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.notification-item:active {
+    transform: translateY(0);
+}

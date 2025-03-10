@@ -6,6 +6,13 @@ const cors = require('cors');
 
 const productRoutes = require('./routes/shop/product-routes');
 const billingRoutes = require('./routes/shop/billing-routes');
+const userRoutes = require('./routes/user-routes');
+const authRoutes = require('./routes/auth-routes');
+
+const cartRoutes = require('./routes/cart-routes');
+const wishlistRoutes = require('./routes/wishlist-routes');
+
+
 
 
 const app = express();
@@ -17,6 +24,10 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/products', productRoutes);
 app.use('/api/billings', billingRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/wishlist', wishlistRoutes);
 
 
 app.listen(PORT, () => {

@@ -98,19 +98,26 @@
     margin: 25px 0;
 }
 
-button {
+.button {
     background: white;
     color: #2c3e50;
     border: none;
-    padding: 12px 40px;
+    /* padding: 12px 40px; */
     border-radius: 25px;
     font-size: 1em;
     font-weight: 600;
     cursor: pointer;
     transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+}
+.login-btn{
+    width: 100%;
 }
 
-button:hover {
+.button:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }

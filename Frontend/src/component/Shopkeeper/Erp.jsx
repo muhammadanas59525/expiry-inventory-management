@@ -74,21 +74,21 @@ const Erp = () => {
 
     const handleAdd = async(e) => {
         e.preventDefault();
-        // const total = (formData.price * formData.quantity) - (formData.price * formData.quantity * (formData.discount / 100));
-        // setRows([...rows, { ...formData, total }]);
-        // setFormData({
-        //     slno: formData.slno + 1,
-        //     pname: '',
-        //     quantity: '',
-        //     price: '',
-        //     discount: '',
-        //     total: '',
-        //     manufactureDate: '',
-        //     expiryDate: ''
-        // });
+        const total = (formData.price * formData.quantity) - (formData.price * formData.quantity * (formData.discount / 100));
+        setRows([...rows, { ...formData, total }]);
+        setFormData({
+            slno: formData.slno + 1,
+            pname: '',
+            quantity: '',
+            price: '',
+            discount: '',
+            total: '',
+            manufactureDate: '',
+            expiryDate: ''
+        });
 
-        const res=await axios.post('http://localhost:3000/api/billings/add',formData);
-        console.log(res.data);
+        // const res=await axios.post('http://localhost:3000/api/billings/add',formData);
+        // console.log(res.data);
     };
 
     const handleGenerateBarcode = (product) => {

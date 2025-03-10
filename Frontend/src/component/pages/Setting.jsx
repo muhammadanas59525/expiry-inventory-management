@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Setting.css';
 
-const Settings = ({ searchHistory, setSearchHistory }) => {
+const Settings = ({user, searchHistory, setSearchHistory }) => {
     const [activeModal, setActiveModal] = useState(null);
     const [theme, setTheme] = useState('default');
     const navigate = useNavigate();
@@ -30,6 +30,8 @@ const Settings = ({ searchHistory, setSearchHistory }) => {
         if (window.confirm('Do you want to logout?')) {
             // Perform logout logic here
             console.log('User logged out');
+            localStorage.removeItem('token');
+            localStorage.removeItem('userInfo');
             navigate('/login'); // Redirect to login page
         }
     };
@@ -59,18 +61,20 @@ const Settings = ({ searchHistory, setSearchHistory }) => {
                         {activeModal === 'personalDetails' && (
                             <div>
                                 <h2>Personal Details</h2>
-                                <p><strong>Name:</strong> John Doe</p>
-                                <p><strong>Email:</strong> john.doe@example.com</p>
-                                <p><strong>Phone:</strong> +1234567890</p>
-                                <p><strong>Address:</strong> 123 Main St, Anytown, USA</p>
+                                <p><strong>Name:</strong>{user.username}</p>
+                                <p><strong>Email:</strong>{user.email}</p>
+                                <p><strong>Phone:</strong>{user.phone}</p>
+                                <p><strong>Address:</strong>{user.address}</p>
                             </div>
                         )}
                         {activeModal === 'theme' && (
                             <div>
                                 <h2>Change Theme</h2>
-                                <button onClick={() => handleThemeChange('default')}>Default</button>
-                                <button onClick={() => handleThemeChange('light')}>Light Mode</button>
-                                <button onClick={() => handleThemeChange('dark')}>Dark Mode</button>
+                                <div className="theme-btns">
+                                    <button onClick={() => handleThemeChange('default')}>Default</button>
+                                    <button onClick={() => handleThemeChange('light')}>Light Mode</button>
+                                    <button onClick={() => handleThemeChange('dark')}>Dark Mode</button>
+                                </div>
                             </div>
                         )}
                         {activeModal === 'giftCard' && <div>Manage Gift Card</div>}
@@ -89,9 +93,9 @@ const Settings = ({ searchHistory, setSearchHistory }) => {
                             </div>
                         )}
                         {activeModal === 'logout' && (
-                            <div>
+                            <div className='logout-dialog'>
                                 <h2>Logout</h2>
-                                <button onClick={handleLogout}>Confirm Logout</button>
+                                <button className='logout-btn' onClick={handleLogout}>Confirm Logout</button>
                             </div>
                         )}
                         

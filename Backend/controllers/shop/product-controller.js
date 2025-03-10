@@ -4,9 +4,10 @@ const Product=require('../../models/product.model')
 const addProduct=async(req,res)=>{
     try {
         const {
-            serialNumber,name,quantity,price,discount,expiryDate,manufactureDate,imageUrl
+            serialNumber,name,quantity,price,discount,expiryDate,manufactureDate,imageUrl,category,description
             
         }=req.body;
+        // console.log("Received product data:", req.body); 
         const product = new Product({
             serialNumber,
             name,
@@ -15,7 +16,9 @@ const addProduct=async(req,res)=>{
             discount,
             expiryDate,
             manufactureDate,
-            imageUrl
+            imageUrl,
+            category,
+            description
         });
         await product.save();
         res.status(201).json({
@@ -64,10 +67,27 @@ const getProduct=async(req,res)=>{
     }
 }
 
+const deleteProduct=async(req,res)=>{
+    try {
+        const {productId}=req.params;
+        await Product.findByIdAndDelete(productId);
+        res.status(200).json({
+            success:true,
+            message:"Product deleted successfully"
+        });
+    } catch (err) {
+        console.log(err,"Internal Server Error");
+        res.status(500).json({
+            message:"Internal Server Error"
+        });
+    }
+}
+
 
 
 module.exports={
     getProducts,
     getProduct,
-    addProduct  
+    addProduct ,
+    deleteProduct 
 }

@@ -1,3 +1,12 @@
+.NavBarShop{
+  width: 100vw;
+  height: 100vh;
+  /* display: flex;
+  flex-direction: column; */
+  margin: 0;
+  padding: 0;
+
+}
 .navbar {
   padding: 5px 15px;
   display: flex;
@@ -9,10 +18,36 @@
   left: 0;
   right: 0;
   z-index: 1000;
-  height: 45px;
+  width: 100vw;
+  height: 85px;
   background: white;
+  margin: 0;
 }
-
+.links>a{
+  /* width: auto; */
+  margin-left: 16px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #100f57; /* Change the font color */
+  background-color: #653ae6;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+}
+.main-container{
+  width: 83vw;
+  height: 85vh;
+  background-color: #3498db;
+  margin-top: 95px;
+  margin-left: 230px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
 .navbar h1 {
   font-size: 24px;
   font-weight: 700;
@@ -69,4 +104,211 @@
   .search-container {
       height: 30px;
   }
+}
+/* Add these styles to NavbarShop.css */
+
+.notification-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.notification-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 5px 10px;
+  position: relative;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #ff4444;
+  color: white;
+  border-radius: 50%;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.7rem;
+  min-width: 8px;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  width: 300px;
+  z-index: 1000;
+  padding: 10px;
+  color: #333;
+}
+
+.notification-dropdown h4 {
+  margin-top: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.notification-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.notification-item {
+  padding: 8px 10px;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.notification-item.expired {
+  background-color: #ffe6e6;
+  border-left: 3px solid #ff4444;
+}
+
+.notification-item.warning {
+  background-color: #fff3e6;
+  border-left: 3px solid #ffa500;
+}
+
+.more-notifications {
+  text-align: center;
+  color: #666;
+  font-size: 0.8rem;
+  margin: 5px 0;
+}
+
+.view-all-button {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  background-color: #f5f5f5;
+  border: none;
+  border-radius: 4px;
+  margin-top: 10px;
+  cursor: pointer;
+  color: #333;
+  font-weight: bold;
+}
+
+.view-all-button:hover {
+  background-color: #e5e5e5;
+}
+
+.no-notifications {
+  text-align: center;
+  color: #666;
+  padding: 10px;
+}
+/* Add these styles to NavbarShop.css */
+
+.notification-badge-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0 10px;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: 0;
+  background-color: #ff4444;
+  color: white;
+  border-radius: 50%;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.7rem;
+  min-width: 8px;
+}
+
+.expiry-alert {
+  position: absolute;
+  top: 65px;
+  right: 20px;
+  background-color: #ffe6e6;
+  border-left: 4px solid #ff4444;
+  padding: 10px 15px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  z-index: 1000;
+  animation: slideIn 0.3s ease-out;
+  max-width: 300px;
+}
+.expiry-alerts-btns{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 40px;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.alert-icon {
+  color: #ff4444;
+  margin-right: 10px;
+  font-size: 1.2rem;
+}
+
+.alert-text {
+  flex-grow: 1;
+  color: #333;
+  font-weight: 500;
+}
+
+.view-notifications {
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  margin: 0 10px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  width: 80%;
+}
+
+.view-notifications:hover {
+  background-color: #d32f2f;
+}
+
+.close-alert {
+  /* background: none; */
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 1.2rem;
+  /* padding: 0 5px; */
+  width: 20%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.close-alert:hover {
+  color: #333;
 }

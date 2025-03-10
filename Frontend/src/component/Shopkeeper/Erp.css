@@ -4,6 +4,8 @@
     margin: 0 auto;
     background: #f8f9fa;
     border-radius: 8px;
+    height: 83vh;
+    overflow-y: scroll;
 }
 
 .erp h2 {
