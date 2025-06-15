@@ -75,3 +75,31 @@
       left: 15px;
   }
 }
+
+/* Loading container style */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f8fafc;
+  font-size: 18px;
+  color: #3b82f6;
+  flex-direction: column;
+}
+
+.loading-container:after {
+  content: "";
+  width: 40px;
+  height: 40px;
+  margin: 20px auto;
+  border-radius: 50%;
+  border: 3px solid #3b82f6;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

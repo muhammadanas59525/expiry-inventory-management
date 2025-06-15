@@ -21,53 +21,31 @@ const NotiShop = () => {
 
     const fetchProducts = async () => {
         try {
-            // Create mock data since API is not responding
-            // const mockProducts = [
-            //     {
-            //         _id: '1',
-            //         id: 1,
-            //         name: 'Product 1',
-            //         description: 'Description 1',
-            //         price: 10.99,
-            //         discount: 5,
-            //         quantity: 20,
-            //         manufactureDate: new Date('2023-01-01'),
-            //         expiryDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000) // 5 days from now
-            //     },
-            //     {
-            //         _id: '2',
-            //         id: 2,
-            //         name: 'Product 2',
-            //         description: 'Description 2',
-            //         price: 19.99,
-            //         discount: 0,
-            //         quantity: 15,
-            //         manufactureDate: new Date('2023-02-15'),
-            //         expiryDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) // 2 days ago (expired)
-            //     },
-            //     {
-            //         _id: '3',
-            //         id: 3,
-            //         name: 'Product 3',
-            //         description: 'Description 3',
-            //         price: 29.99,
-            //         discount: 10,
-            //         quantity: 8,
-            //         manufactureDate: new Date('2023-03-10'),
-            //         expiryDate: new Date(Date.now() + 9 * 24 * 60 * 60 * 1000) // 9 days from now
-            //     }
-            // ];
-            
-            // setProducts(mockProducts);
-            // setError(null);
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error('No token found, please login again');
+                setProducts([]);
+                setError('Authentication required. Please login again.');
+                return;
+            }
             
             // When the backend is ready, uncomment this
-            const response = await axios.get('http://localhost:3000/api/products/get');
-            setProducts(response.data);
+            const response = await axios.get('http://localhost:3000/api/shop/products', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.data && response.data.data) {
+                setProducts(response.data.data);
+            } else {
+                setProducts([]);
+            }
             setError(null);
         } catch (error) {
             setError('Failed to fetch products. Please check your network connection.');
             console.error('Error fetching products:', error);
+            setProducts([]);
         }
     };
 

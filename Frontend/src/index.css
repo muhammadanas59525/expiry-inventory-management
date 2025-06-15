@@ -3,18 +3,148 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --font-family: 'Quicksand', sans-serif;
+  --primary-color: #3b82f6;
+  --primary-hover: #2563eb;
+  --primary-light: #eff6ff;
+  --secondary-color: #4b5563;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --text-color: #333333;
+  --text-light: #6b7280;
+  --background-color: #ffffff;
+  --background-alt: #f9fafb;
+  --border-color: #e5e7eb;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --border-radius-sm: 0.25rem;
+  --border-radius-md: 0.375rem;
+  --border-radius-lg: 0.5rem;
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+}
+
 * {
   margin: 0;
-  font-family: "Quicksand";
-  color: #333;
+  font-family: var(--font-family);
+  color: var(--text-color);
   padding: 0;
   outline: 0;
   box-sizing: border-box;
 }
-body{
+
+body {
   margin: 0;
-  font-family: 'Quicksand', sans-serif;
-  color: #333;
-  /* align-items: center; */
+  font-family: var(--font-family);
+  color: var(--text-color);
   overflow-x: hidden;
+  background-color: var(--background-alt);
+  line-height: 1.5;
+  font-size: 16px;
+}
+
+/* Responsive typography */
+h1, h2, h3, h4, h5, h6 {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+h3 {
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+}
+
+/* Button styles */
+button {
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+button:focus {
+  outline: none;
+}
+
+/* Form elements */
+input, 
+select, 
+textarea {
+  font-family: var(--font-family);
+  font-size: 1rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-fast);
+}
+
+input:focus, 
+select:focus, 
+textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+/* Helper classes */
+.container {
+  width: 100%;
+  padding-right: 1rem;
+  padding-left: 1rem;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+@media (min-width: 640px) {
+  .container {
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }

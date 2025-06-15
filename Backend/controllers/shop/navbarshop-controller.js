@@ -1,5 +1,5 @@
 const Notification = require('../models/notification.model');
-const Product = require('../models/product.model');
+const Product = require('../models/Product');
 const User = require('../models/user.model');
 
 // Get all notifications for a user

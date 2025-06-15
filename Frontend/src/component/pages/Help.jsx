@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { FiPhone, FiMail, FiMapPin, FiClock, FiSend, FiHelpCircle } from 'react-icons/fi';
+import emailjs from '@emailjs/browser';
 import './Help.css';
 
 const Help = () => {
@@ -11,6 +12,9 @@ const Help = () => {
         message: ''
     });
     const [formSubmitted, setFormSubmitted] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState(null);
+    const formRef = useRef();
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -22,20 +26,60 @@ const Help = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // In a real app, you would send this data to your backend
-        console.log('Form submitted:', formData);
-        setFormSubmitted(true);
-        // Reset form after submission
-        setFormData({
-            name: '',
-            email: '',
-            subject: '',
-            message: ''
-        });
-        // Reset submission status after 5 seconds
-        setTimeout(() => {
-            setFormSubmitted(false);
-        }, 5000);
+        setIsSubmitting(true);
+        setSubmitError(null);
+        
+        // EmailJS service configuration for Vite
+        // Using environment variables for security
+        const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_gx4u4zt';
+        const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_kvo9rso';
+        const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '4lD7XSu88ViRSHstH';
+        
+        // Check if EmailJS keys are properly configured
+        // if (serviceId === 'service_gx4u4zt' || 
+        //     templateId === 'template_kvo9rso' || 
+        //     publicKey === '4lD7XSu88ViRSHstH') {
+        //     console.warn('EmailJS is not properly configured. Please set your environment variables.');
+        //     setSubmitError('Email service not configured properly. Please contact site administrator.');
+        //     setIsSubmitting(false);
+        //     return;
+        // }
+        
+        // Prepare template parameters
+        const templateParams = {
+            from_name: formData.name,
+            from_email: formData.email,
+            subject: formData.subject,
+            message: formData.message,
+            to_email: 'exims2025@gmail.com'
+        };
+        
+        // Send email using EmailJS
+        emailjs.send(serviceId, templateId, templateParams, publicKey)
+            .then((response) => {
+                console.log('Email sent successfully:', response);
+                setFormSubmitted(true);
+                
+                // Reset form after submission
+                setFormData({
+                    name: '',
+                    email: '',
+                    subject: '',
+                    message: ''
+                });
+                
+                // Reset submission status after 5 seconds
+                setTimeout(() => {
+                    setFormSubmitted(false);
+                }, 5000);
+            })
+            .catch((error) => {
+                console.error('Failed to send email:', error);
+                setSubmitError('Failed to send your message. Please try again later.');
+            })
+            .finally(() => {
+                setIsSubmitting(false);
+            });
     };
 
     const faqList = [
@@ -49,7 +93,7 @@ const Help = () => {
         },
         {
             question: "What is your return policy?",
-            answer: "We accept returns within 30 days of purchase. Products must be unopened and in original packaging. For perishable goods, please contact our customer service within 24 hours of delivery if there are any issues."
+            answer: "We accept returns within 3 days of purchase. Products must be unopened and in original packaging. For perishable goods, please contact our customer service within 24 hours of delivery if there are any issues."
         },
         {
             question: "Do you offer same-day delivery?",
@@ -111,19 +155,19 @@ const Help = () => {
                                 <FiMail />
                             </div>
                             <h3>Email Us</h3>
-                            <p>Customer Support: <a href="mailto:support@grocerystore.com">support@grocerystore.com</a></p>
-                            <p>Order Inquiries: <a href="mailto:orders@grocerystore.com">orders@grocerystore.com</a></p>
-                            <p>Business Relations: <a href="mailto:business@grocerystore.com">business@grocerystore.com</a></p>
+                            <p>Customer Support: <a href="mailto:exims2025@gmail.com">exims2025@gmail.com</a></p>
+                            <p>Order Inquiries: <a href="mailto:exims2025@gmail.com">exims2025@gmail.com</a></p>
+                            <p>Business Relations: <a href="mailto:exims2025@gmail.com">exims2025@gmail.com</a></p>
                         </div>
 
                         <div className="contact-card">
                             <div className="contact-icon">
                                 <FiMapPin />
                             </div>
-                            <h3>Visit Us</h3>
-                            <p>123 Grocery Lane</p>
-                            <p>Shopping District, City 12345</p>
-                            <p>Country</p>
+                            <h3>Address Us</h3>
+                            <p>EXIMS</p>
+                            <p>College Of Engineering Vadakara</p>
+                            <p>Kerala</p>
                             <p><a href="https://maps.google.com" target="_blank" rel="noopener noreferrer">View on Map</a></p>
                         </div>
 
@@ -216,9 +260,17 @@ const Help = () => {
                                     ></textarea>
                                 </div>
                                 
-                                <button type="submit" className="submit-button">
-                                    <FiSend /> Send Message
-                                </button>
+                                <button 
+                                type="submit" 
+                                className="submit-button"
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? (
+                                    <>Sending Message...</>
+                                ) : (
+                                    <><FiSend /> Send Message</>
+                                )}
+                            </button>
                             </form>
                         )}
                     </div>

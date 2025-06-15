@@ -1,11 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './Checkout.css';
 import { QRCodeSVG } from 'qrcode.react';
+import axiosInstance from '../../utils/axios';
 
+// Mock data for when API fails or is unavailable
+const mockCartItems = [
+    {
+        _id: 'mock-cart-1',
+        quantity: 2,
+        product: {
+            _id: 'mock-product-1',
+            name: 'Mock Product 1',
+            price: 99.99,
+            imageUrl: 'https://placehold.co/150x150/e2e8f0/1e293b?text=Product+1',
+            discount: 15,
+            expiryDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+            category: 'Groceries'
+        }
+    },
+    {
+        _id: 'mock-cart-2',
+        quantity: 1,
+        product: {
+            _id: 'mock-product-2',
+            name: 'Mock Product 2',
+            price: 49.99,
+            imageUrl: 'https://placehold.co/150x150/e2e8f0/1e293b?text=Product+2',
+            discount: 0,
+            expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            category: 'Dairy'
+        }
+    }
+];
 
 function Checkout() {
     const navigate = useNavigate();
@@ -13,7 +42,8 @@ function Checkout() {
     const [cart, setCart] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-        // Add to your existing state variables
+    const [useMockData, setUseMockData] = useState(false);
+    // Add to your existing state variables
     const [formErrors, setFormErrors] = useState({ hasErrors: false, message: '' });
     const [addressConfirmed, setAddressConfirmed] = useState(false);
     const [activeSection, setActiveSection] = useState('shipping');
@@ -98,25 +128,40 @@ const [orderComplete, setOrderComplete] = useState(false);
                 setLoading(true);
                 
                 // Try to get cart from location state first
-                if (location.state?.cart) {
+                if (location.state?.cart && location.state.cart.length > 0) {
                     console.log('Using cart from location state:', location.state.cart);
                     setCart(location.state.cart);
                 } else {
                     // Fetch cart data from API if not in location state
-                    const token = localStorage.getItem('token');
-                    if (!token) {
-                        navigate('/login');
-                        return;
-                    }
-                    
-                    const cartResponse = await axios.get('http://localhost:3000/api/cart', {
-                        headers: { Authorization: `Bearer ${token}` }
-                    });
-                    
-                    if (cartResponse.data && cartResponse.data.success && Array.isArray(cartResponse.data.data)) {
-                        setCart(cartResponse.data.data);
-                    } else {
-                        setCart([]);
+                    try {
+                        const cartResponse = await axiosInstance.get('/cart');
+                        
+                        if (cartResponse.data && cartResponse.data.success && Array.isArray(cartResponse.data.data)) {
+                            console.log('Cart data from API:', cartResponse.data);
+                            setCart(cartResponse.data.data);
+                        } else {
+                            throw new Error(cartResponse.data?.message || 'Invalid cart data format');
+                        }
+                    } catch (apiError) {
+                        console.error('Error fetching cart:', apiError);
+                        
+                        // Handle specific error cases
+                        if (apiError.response?.status === 403) {
+                            const errorMessage = apiError.response.data?.message || 'Account is not active';
+                            console.log('Account inactive:', errorMessage);
+                            setError('Your account is not active. Please contact support.');
+                        } else if (apiError.response?.status === 401) {
+                            console.log('User not authenticated');
+                            setError('Please login to view your cart.');
+                            // Redirect to login page after a delay
+                            setTimeout(() => {
+                                navigate('/login');
+                            }, 2000);
+                        } else {
+                            console.log('Using mock cart data due to API error');
+                            setCart(mockCartItems);
+                            setUseMockData(true);
+                        }
                     }
                 }
                 
@@ -127,6 +172,8 @@ const [orderComplete, setOrderComplete] = useState(false);
             } catch (err) {
                 console.error('Error loading checkout data:', err);
                 setError('Failed to load checkout data. Please try again.');
+                setCart(mockCartItems);
+                setUseMockData(true);
                 setLoading(false);
             }
         };
@@ -137,33 +184,58 @@ const [orderComplete, setOrderComplete] = useState(false);
     // Fetch saved addresses from backend
     const fetchSavedAddresses = async () => {
         try {
-            const token = localStorage.getItem('token');
-            if (!token) return;
-            
-            const response = await axios.get('http://localhost:3000/api/users/addresses', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            
-            if (response.data && response.data.addresses) {
-                setSavedAddresses(response.data.addresses);
+            // Use a try/catch to handle if the addresses endpoint isn't available
+            try {
+                const response = await axiosInstance.get('/users/addresses');
                 
-                // Use the default address if available
-                if (response.data.addresses.length > 0) {
-                    const defaultAddress = response.data.addresses.find(addr => addr.isDefault) || 
-                                          response.data.addresses[0];
-                    setShippingInfo({
-                        fullName: defaultAddress.fullName || '',
-                        address: defaultAddress.address || '',
-                        city: defaultAddress.city || '',
-                        state: defaultAddress.state || '',
-                        postalCode: defaultAddress.postalCode || '',
-                        country: defaultAddress.country || '',
-                        phone: defaultAddress.phone || ''
-                    });
+                if (response.data && response.data.success && Array.isArray(response.data.addresses)) {
+                    setSavedAddresses(response.data.addresses);
+                    
+                    // Use the default address if available
+                    if (response.data.addresses.length > 0) {
+                        const defaultAddress = response.data.addresses.find(addr => addr.isDefault) || 
+                                            response.data.addresses[0];
+                        setShippingInfo({
+                            fullName: defaultAddress.fullName || '',
+                            address: defaultAddress.address || '',
+                            city: defaultAddress.city || '',
+                            state: defaultAddress.state || '',
+                            postalCode: defaultAddress.postalCode || '',
+                            country: defaultAddress.country || '',
+                            phone: defaultAddress.phone || ''
+                        });
+                    }
+                } else {
+                    throw new Error(response.data?.message || 'Invalid addresses data format');
+                }
+            } catch (addressError) {
+                console.error('Error fetching addresses:', addressError);
+                
+                // Handle specific error cases
+                if (addressError.response?.status === 403) {
+                    console.log('Account inactive, cannot fetch addresses');
+                } else if (addressError.response?.status === 401) {
+                    console.log('User not authenticated, cannot fetch addresses');
+                } else {
+                    console.log('Could not fetch saved addresses - endpoint may not be available');
+                    // Set some sample addresses for demo
+                    setSavedAddresses([
+                        {
+                            id: 'sample-1',
+                            fullName: 'John Doe',
+                            address: '123 Main St',
+                            city: 'Metropolis',
+                            state: 'NY',
+                            postalCode: '10001',
+                            country: 'United States',
+                            phone: '555-123-4567',
+                            isDefault: true
+                        }
+                    ]);
                 }
             }
         } catch (err) {
-            console.error('Error fetching saved addresses:', err);
+            console.error('Error in fetchSavedAddresses:', err);
         }
     };
     
@@ -252,108 +324,74 @@ const handlePlaceOrder = async () => {
         return;
     }
 
-
-    if (paymentMethod === 'upi') {
-        // Show UPI QR code
-        setShowQRCode(true);
-    } else if (paymentMethod === 'cashOnDelivery') {
-        // Process COD order
-        setOrderProcessing(true);
-        
-        // Simulate order processing
-        setTimeout(() => {
-            setOrderProcessing(false);
-            setOrderCompleted(true);
-            
-            // Redirect to success page after a delay
-            setTimeout(() => {
-                navigate('/customer/order-confirmation', {
-                    state: {
-                        orderId: 'ORD-' + Date.now().toString().slice(-6),
-                        paymentMethod: 'Cash on Delivery',
-                        shippingInfo,
-                        orderItems: cart,
-                        totalAmount: calculateTotal()
-                    }
-                });
-            }, 1500);
-        }, 2000);
-
-
-        // Generate UPI payment link
-const generateUPILink = () => {
-    const amount = calculateTotal();
-    return `upi://pay?pa=anujithdasan123@oksbi&pn=GroceryStore&am=${amount}&cu=INR&tn=Order%20Payment`;
-};
-
-// Handle UPI payment completion
-const handleUPIPaymentComplete = () => {
-    setShowQRCode(false);
-    setOrderCompleted(true);
-    
-    // Redirect to success page
-    navigate('/customer/order-confirmation', {
-        state: {
-            orderId: 'ORD-' + Date.now().toString().slice(-6),
-            paymentMethod: 'UPI Payment',
-            shippingInfo,
-            orderItems: cart,
-            totalAmount: calculateTotal()
-        }
-    });
-};
-
-        
-        // Create temporary order object
-        const orderDetails = {
-            orderId: 'TEMP-' + Date.now(),
-            items: cart,
-            totalAmount: totalAmount,
-            shippingInfo: shippingInfo,
-            paymentMethod: 'UPI'
-        };
-        
-        // Navigate to UPI payment page with order details
-        navigate('/upi-payment', { 
-            state: { 
-                order: orderDetails
-            } 
-        });
-        return;
-    }
-    
-    // Handle other payment methods as before
     setOrderProcessing(true);
     
     try {
         // Create order data
         const orderData = {
             items: cart.map(item => ({
-                productId: item._id,
+                productId: item.product?._id || item._id,
                 quantity: item.quantity,
-                price: item.price
+                price: item.product?.price || item.price
             })),
             shipping: shippingInfo,
-            paymentMethod: paymentMethod
+            paymentMethod: paymentMethod,
+            totalAmount: calculateTotal(),
+            subtotal: subtotal,
+            taxAmount: taxAmount,
+            shippingCost: shippingCost
         };
         
-        // Example API call to create order
-        // const response = await axios.post('http://localhost:3000/api/orders/create', orderData);
-        
-        // For demo purposes, simulate API call
-        setTimeout(() => {
-            setOrderProcessing(false);
-            setOrderComplete(true);
+        // API call to create order
+        try {
+            const response = await axiosInstance.post('/orders/create', orderData);
             
-            // Navigate to order success page
-            setTimeout(() => {
-                navigate('/customer/order-success', {
-                    state: {
-                        orderId: 'ORD' + Math.floor(Math.random() * 1000000)
-                    }
+            if (response.data && response.data.success) {
+                setOrderProcessing(false);
+                setOrderComplete(true);
+                
+                // Navigate to order success page
+                setTimeout(() => {
+                    navigate('/customer/order-confirmation', {
+                        state: {
+                            orderId: response.data.orderId || 'ORD' + Math.floor(Math.random() * 1000000),
+                            paymentMethod: paymentMethod === 'card' ? 'Credit Card' : paymentMethod,
+                            shippingInfo,
+                            orderItems: cart,
+                            totalAmount: calculateTotal()
+                        }
+                    });
+                }, 2000);
+            } else {
+                throw new Error(response.data?.message || 'Failed to create order');
+            }
+        } catch (apiError) {
+            console.error('API Error:', apiError);
+            
+            // Handle specific error cases
+            if (apiError.response?.status === 403) {
+                setFormErrors({
+                    hasErrors: true,
+                    message: 'Your account is not active. Please contact support.'
                 });
-            }, 2000);
-        }, 1500);
+            } else if (apiError.response?.status === 401) {
+                setFormErrors({
+                    hasErrors: true,
+                    message: 'Please login to place your order.'
+                });
+                // Redirect to login page after a delay
+                setTimeout(() => {
+                    navigate('/login');
+                }, 2000);
+            } else {
+                setFormErrors({
+                    hasErrors: true,
+                    message: apiError.response?.data?.message || 'Failed to place order. Please try again.'
+                });
+            }
+            
+            setOrderProcessing(false);
+        }
     } catch (error) {
         console.error('Error placing order:', error);
         setOrderProcessing(false);
@@ -413,9 +451,40 @@ const handleUPIPaymentComplete = () => {
         }));
     };
     
+    // Generate UPI payment link
+    const generateUPILink = () => {
+        const amount = calculateTotal();
+        return `upi://pay?pa=anujithdasan123@oksbi&pn=GroceryStore&am=${amount}&cu=INR&tn=Order%20Payment`;
+    };
+
+    // Handle UPI payment completion
+    const handleUPIPaymentComplete = () => {
+        setShowQRCode(false);
+        setOrderCompleted(true);
+        
+        // Redirect to success page
+        navigate('/customer/order-confirmation', {
+            state: {
+                orderId: 'UPI-ORD-' + Date.now().toString().slice(-6),
+                paymentMethod: 'UPI Payment',
+                shippingInfo,
+                orderItems: cart,
+                totalAmount: calculateTotal()
+            }
+        });
+    };
+
     if (loading) {
         return (
             <div className="checkout-container">
+                <ToastContainer position="top-right" autoClose={3000} />
+                
+                {useMockData && (
+                    <div className="mock-data-notice">
+                        <p>Using demo data for checkout functionality - some backend API endpoints may not be available</p>
+                    </div>
+                )}
+                
                 <div className="loading-spinner">
                     <div className="spinner"></div>
                     <p>Loading checkout information...</p>
@@ -427,6 +496,14 @@ const handleUPIPaymentComplete = () => {
     if (error) {
         return (
             <div className="checkout-container">
+                <ToastContainer position="top-right" autoClose={3000} />
+                
+                {useMockData && (
+                    <div className="mock-data-notice">
+                        <p>Using demo data for checkout functionality - some backend API endpoints may not be available</p>
+                    </div>
+                )}
+                
                 <div className="error-message">
                     <h2>Something went wrong</h2>
                     <p>{error}</p>
@@ -455,6 +532,12 @@ const handleUPIPaymentComplete = () => {
     return (
         <div className="checkout-container">
             <ToastContainer position="top-right" autoClose={3000} />
+            
+            {useMockData && (
+                <div className="mock-data-notice">
+                    <p>Using demo data for checkout functionality - some backend API endpoints may not be available</p>
+                </div>
+            )}
             
             <div className="checkout-header">
                 <h1>Checkout</h1>
@@ -882,7 +965,7 @@ const handleUPIPaymentComplete = () => {
                                 <div key={index} className="order-item">
                                     <div className="item-image">
                                         <img 
-                                            src={item.product?.imageUrl || 'https://via.placeholder.com/60'} 
+                                            src={item.product?.imageUrl || 'https://placehold.co/60x60/e2e8f0/1e293b?text=Product'} 
                                             alt={item.product?.name || 'Product'} 
                                         />
                                     </div>

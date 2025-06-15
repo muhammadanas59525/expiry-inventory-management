@@ -1,4 +1,4 @@
-const User = require('../../models/user.model');
+const User = require('../../models/User');
 const bcrypt = require('bcryptjs');
 const { address } = require('framer-motion/client');
 const jwt = require('jsonwebtoken');
@@ -131,7 +131,8 @@ const getUserProfile = async (req, res) => {
         res.status(500).json({ message: error.message || 'Server error' });
     }
 };
-// Add this new function after getUserProfile
+
+// Update user profile
 const updateUserProfile = async (req, res) => {
     try {
         console.log("Update profile request received:", req.body);
@@ -177,7 +178,7 @@ const updateUserProfile = async (req, res) => {
             lastName: updatedUser.lastName,
             email: updatedUser.email,
             userType: updatedUser.userType,
-            phone: updatedUser.phone,
+            phone: updatedUser.phone|| "",
             address: updatedUser.address,
             storeName: updatedUser.storeName,
             bio: updatedUser.bio || "",  // Handle case where bio field might not exist
@@ -191,7 +192,134 @@ const updateUserProfile = async (req, res) => {
     }
 };
 
+const UserController = {
+    // Get user profile
+    getProfile: async (req, res) => {
+        try {
+            const user = await User.findById(req.user.id).select('-password');
+            res.json({
+                success: true,
+                data: user
+            });
+        } catch (error) {
+            console.error('Get profile error:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Error fetching profile'
+            });
+        }
+    },
 
+    // Update user profile
+    updateProfile: async (req, res) => {
+        try {
+            const { name, email, phone, address } = req.body;
+            const userId = req.user.id;
 
-// Update the exports to include the new function
-module.exports = { registerUser, loginUser, getUserProfile, updateUserProfile };
+            // Check if email is being changed and if it's already taken
+            if (email && email !== req.user.email) {
+                const existingUser = await User.findOne({ email });
+                if (existingUser) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Email already in use'
+                    });
+                }
+            }
+
+            const updatedUser = await User.findByIdAndUpdate(
+                userId,
+                {
+                    $set: {
+                        name: name || req.user.name,
+                        email: email || req.user.email,
+                        phone: phone || req.user.phone,
+                        address: address || req.user.address,
+                        updated_at: new Date()
+                    }
+                },
+                { new: true }
+            ).select('-password');
+
+            res.json({
+                success: true,
+                data: updatedUser
+            });
+        } catch (error) {
+            console.error('Update profile error:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Error updating profile'
+            });
+        }
+    },
+
+    // Change password
+    changePassword: async (req, res) => {
+        try {
+            const { currentPassword, newPassword } = req.body;
+            const userId = req.user.id;
+
+            // Get user with password
+            const user = await User.findById(userId);
+
+            // Check current password
+            const isMatch = await bcrypt.compare(currentPassword, user.password);
+            if (!isMatch) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Current password is incorrect'
+                });
+            }
+
+            // Hash new password
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(newPassword, salt);
+            user.updated_at = new Date();
+
+            await user.save();
+
+            res.json({
+                success: true,
+                message: 'Password updated successfully'
+            });
+        } catch (error) {
+            console.error('Change password error:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Error changing password'
+            });
+        }
+    },
+
+    // Delete account
+    deleteAccount: async (req, res) => {
+        try {
+            const userId = req.user.id;
+
+            // Instead of actually deleting, set status to inactive
+            const user = await User.findByIdAndUpdate(
+                userId,
+                {
+                    $set: {
+                        status: 'inactive',
+                        updated_at: new Date()
+                    }
+                }
+            );
+
+            res.json({
+                success: true,
+                message: 'Account deactivated successfully'
+            });
+        } catch (error) {
+            console.error('Delete account error:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Error deactivating account'
+            });
+        }
+    }
+};
+
+module.exports = UserController;

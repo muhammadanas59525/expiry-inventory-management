@@ -31,8 +31,19 @@ const Settings = ({user, searchHistory, setSearchHistory }) => {
             // Perform logout logic here
             console.log('User logged out');
             localStorage.removeItem('token');
-            localStorage.removeItem('userInfo');
-            navigate('/login'); // Redirect to login page
+  localStorage.removeItem('user');
+  localStorage.removeItem('userType'); // Make sure this is cleared
+  
+  // Reset all auth state
+//   setAuth({
+//     isAuthenticated: false,
+//     user: null,
+//     userType: null,
+//     loading: false
+//   });
+  
+  // Redirect to login page
+  navigate('/login');
         }
     };
 
@@ -101,11 +112,14 @@ const Settings = ({user, searchHistory, setSearchHistory }) => {
                         
                         {activeModal === 'customerService' && (
                             <div>
-                                <h2>Contact Customer Service</h2>
-                                <p>Email: exims@gmail.com</p>
-                                <p>Phone: +1234567890</p>
+                                
                             </div>
                         )}
+                    <div>
+                        <h2>Customer Service</h2>
+                        <p>Need help with something? Our customer service team is here to assist you.</p>
+                        <button className="logout-btn" onClick={() => navigate('/customer/help')}>Go to Help Center</button>
+                    </div>
                     </div>
                 </div>
             )}

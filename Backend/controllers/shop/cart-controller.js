@@ -1,10 +1,11 @@
 const Cart = require('../../models/cart.model');
-const Product = require('../../models/product.model');
+const Product = require('../../models/Product');
+const User = require('../../models/User');
 
 // Get user cart
 const getCart = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const userId = req.user.id;
         
         // Find user cart or create if not exists
         let cart = await Cart.findOne({ user: userId }).populate({
@@ -47,8 +48,8 @@ const getCart = async (req, res) => {
 // Add item to cart
 const addToCart = async (req, res) => {
     try {
-        const userId = req.user._id;
         const { productId, quantity } = req.body;
+        const userId = req.user.id;
         
         // Validate request
         if (!productId) {
@@ -90,7 +91,7 @@ const addToCart = async (req, res) => {
         
         if (itemIndex > -1) {
             // Product exists in cart, update quantity
-            cart.items[itemIndex].quantity += requestedQuantity;
+            cart.items[itemIndex].quantity = requestedQuantity;
         } else {
             // Product not in cart, add new item
             cart.items.push({
@@ -135,12 +136,11 @@ const addToCart = async (req, res) => {
 // Update cart item quantity
 const updateCartItem = async (req, res) => {
     try {
-        const userId = req.user._id;
-        const { itemId } = req.params;
-        const { quantity } = req.body;
+        const { productId, quantity } = req.body;
+        const userId = req.user.id;
         
         // Validate request
-        if (!itemId || !quantity) {
+        if (!productId || !quantity) {
             return res.status(400).json({
                 success: false,
                 message: 'Item ID and quantity are required'
@@ -157,7 +157,7 @@ const updateCartItem = async (req, res) => {
         }
         
         // Find item in cart
-        const itemIndex = cart.items.findIndex(item => item._id.toString() === itemId);
+        const itemIndex = cart.items.findIndex(item => item.product.toString() === productId);
         if (itemIndex === -1) {
             return res.status(404).json({
                 success: false,
@@ -203,8 +203,8 @@ const updateCartItem = async (req, res) => {
 // Remove item from cart
 const removeFromCart = async (req, res) => {
     try {
-        const userId = req.user._id;
         const { itemId } = req.params;
+        const userId = req.user.id;
         
         // Find cart
         const cart = await Cart.findOne({ user: userId });
@@ -216,7 +216,16 @@ const removeFromCart = async (req, res) => {
         }
         
         // Remove item
-        cart.items = cart.items.filter(item => item._id.toString() !== itemId);
+        // Check if itemId is a product ID or cart item ID
+        const isProductId = cart.items.some(item => item.product.toString() === itemId);
+        
+        if (isProductId) {
+            // Filter by product ID
+            cart.items = cart.items.filter(item => item.product.toString() !== itemId);
+        } else {
+            // Filter by cart item ID
+            cart.items = cart.items.filter(item => item._id.toString() !== itemId);
+        }
         
         await cart.save();
         
@@ -237,7 +246,7 @@ const removeFromCart = async (req, res) => {
 // Clear cart
 const clearCart = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const userId = req.user.id;
         
         // Find cart
         const cart = await Cart.findOne({ user: userId });

@@ -1042,3 +1042,13 @@ textarea:focus {
         width: 100%;
     }
 }
+
+.mock-data-notice {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    border-left: 4px solid #ffeeba;
+    font-size: 14px;
+}

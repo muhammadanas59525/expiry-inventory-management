@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import './ProductDetailsShop.css';
-import axios from 'axios';
+import axiosInstance from '../../utils/axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const ProductDetailsShop = ({ deleteProduct }) => {
+const ProductDetailsShop = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { id } = useParams();
@@ -11,16 +13,20 @@ const ProductDetailsShop = ({ deleteProduct }) => {
     const [isDeleting, setIsDeleting] = useState(false);
     const [loading, setLoading] = useState(!product);
     const [error, setError] = useState(null);
-
+    const [newDiscount, setNewDiscount] = useState('');
+    const [isUpdating, setIsUpdating] = useState(false);
 
     useEffect(() => {
         const fetchProduct = async () => {
             if (!product && id) {
                 try {
                     setLoading(true);
-                    const response = await axios.get(`http://localhost:3000/api/products/get/${id}`);
+                    
+                    const response = await axiosInstance.get(`/shop/products/${id}`);
+                    
                     if (response.data.success) {
-                        setProduct(response.data.data);
+                        setProduct(response.data.product || response.data.data);
+                        setNewDiscount(response.data.product?.discount || response.data.data?.discount || 0);
                     } else {
                         setError("Failed to load product details");
                     }
@@ -30,27 +36,20 @@ const ProductDetailsShop = ({ deleteProduct }) => {
                 } finally {
                     setLoading(false);
                 }
+            } else if (product) {
+                setNewDiscount(product.discount || 0);
             }
         };
         
         fetchProduct();
     }, [id, product]);
 
-    // const handleDeleteProduct = () => {
-    //     if (window.confirm('Are you sure you want to delete this product?')) {
-    //         setIsDeleting(true);
-    //         deleteProduct(product.id);
-    //         setTimeout(() => {
-    //             navigate('/homeshop');
-    //         }, 500);
-    //     }
-    // };
     const handleDeleteProduct = async () => {
-        // Get product ID, either from the product object or URL params
         const productId = product?._id || id;
         
+        console.log("Attempting to delete product with ID:", productId);
         if (!productId) {
-            alert("Product ID not found");
+            toast.error("Product ID not found");
             return;
         }
         
@@ -60,43 +59,106 @@ const ProductDetailsShop = ({ deleteProduct }) => {
 
         try {
             setIsDeleting(true);
-            const token = localStorage.getItem('token');
             
-            if (!token) {
-                alert("Authentication required. Please log in again.");
-                navigate('/login');
-                return;
-            }
-            
-            console.log("Deleting product with ID:", productId);
-            
-            const response = await axios.delete(
-                `http://localhost:3000/api/products/delete/${productId}`, 
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            // Make sure we're using the same URL structure the backend expects
+            console.log("Making delete request to:", `/shop/products/${productId}`);
+            const response = await axiosInstance.delete(`/shop/products/${productId}`);
             
             console.log("Delete response:", response.data);
-            
             if (response.data.success) {
-                alert("Product deleted successfully");
+                toast.success("Product deleted successfully");
                 setTimeout(() => {
                     navigate('/shopkeeper');
                 }, 500);
             } else {
-                alert("Failed to delete product: " + (response.data.message || "Unknown error"));
+                toast.error("Failed to delete product: " + (response.data.message || "Unknown error"));
                 setIsDeleting(false);
             }
         } catch (err) {
             console.error("Error deleting product:", err);
-            alert("Error deleting product: " + (err.response?.data?.message || err.message || "Unknown error"));
-            setIsDeleting(false);
+            const errorMsg = err.response?.data?.message || err.message || "Unknown error";
+            console.error("Error details:", errorMsg);
+            
+            // If we get a 404, it means the product is already gone, which is what we wanted
+            // So we'll treat it as a success
+            if (err.response && err.response.status === 404) {
+                toast.info("Product was already removed or doesn't exist");
+                setTimeout(() => {
+                    navigate('/shopkeeper');
+                }, 500);
+            } else {
+                toast.error("Error deleting product: " + errorMsg);
+                setIsDeleting(false);
+            }
         }
     };
+
+    const handleUpdateDiscount = async () => {
+        const productId = product?._id || id;
+        
+        console.log("Updating discount for product ID:", productId);
+        if (!productId) {
+            toast.error("Product ID not found");
+            return;
+        }
+
+        try {
+            setIsUpdating(true);
+            
+            console.log("Making patch request to:", `/shop/products/${productId}`);
+            console.log("With data:", { discount: parseFloat(newDiscount) });
+            
+            const response = await axiosInstance.patch(`/shop/products/${productId}`, {
+                discount: parseFloat(newDiscount)
+            });
+            
+            console.log("Update response:", response.data);
+            if (response.data.success) {
+                toast.success("Discount updated successfully");
+                setProduct({
+                    ...product,
+                    discount: parseFloat(newDiscount)
+                });
+            } else {
+                toast.error("Failed to update discount: " + (response.data.message || "Unknown error"));
+            }
+        } catch (err) {
+            console.error("Error updating discount:", err);
+            const errorMsg = err.response?.data?.message || err.message || "Unknown error";
+            console.error("Error details:", errorMsg);
+            toast.error("Error updating discount: " + errorMsg);
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleCancelClick = () => {
+        navigate('/shopkeeper');
+    };
+
+    if (loading) {
+        return (
+            <div className="product-details-page loading">
+                <div className="loading-spinner">Loading product details...</div>
+            </div>
+        );
+    }
+
+    if (error || !product) {
+        return (
+            <div className="product-details-page error">
+                <div className="error-message">{error || "Product not found"}</div>
+                <button className="navigate-back" onClick={handleCancelClick}>Go Back to Home</button>
+            </div>
+        );
+    }
+
     return (
         <div className={`product-details-page ${isDeleting ? 'fade-out' : ''}`}>
+            <ToastContainer position="top-right" autoClose={3000} />
             <div className="product-container">
                 <div className="product-image-section">
-                <img src={product.imageUrl || 'https://via.placeholder.com/400x300'} alt={product.name} />
+                    <img src={product.imageUrl || 'https://placehold.co/400x300?text=No+Image'} alt={product.name} />
                 </div>
                 <div className="product-info-section">
                     <h2>{product.name}</h2>
@@ -104,14 +166,14 @@ const ProductDetailsShop = ({ deleteProduct }) => {
                     <div className="price-section">
                         {product.discount > 0 ? (
                             <>
-                                <span className="original-price">${product.price.toFixed(2)}</span>
+                                <span className="original-price">₹{product.price.toFixed(2)}</span>
                                 <span className="discounted-price">
-                                    ${(product.price * (1 - product.discount/100)).toFixed(2)}
+                                    ₹{(product.price * (1 - product.discount/100)).toFixed(2)}
                                 </span>
                                 <span className="discount-badge">-{product.discount}%</span>
                             </>
                         ) : (
-                            <span className="price">${product.price.toFixed(2)}</span>
+                            <span className="price">₹{product.price.toFixed(2)}</span>
                         )}
                     </div>
                     <div className="stock-info">
@@ -120,16 +182,50 @@ const ProductDetailsShop = ({ deleteProduct }) => {
                         </span>
                     </div>
                     <div className="date-info">
-                        <p className="manufacture-date">
-                            Manufactured: {new Date(product.manufactureDate).toLocaleDateString()}
-                        </p>
-                        <p className="expiry-date">
-                            Expires: {new Date(product.expiryDate).toLocaleDateString()}
-                        </p>
+                        {product.manufactureDate && (
+                            <p className="manufacture-date">
+                                Manufactured: {new Date(product.manufactureDate).toLocaleDateString()}
+                            </p>
+                        )}
+                        {product.expiryDate && (
+                            <p className="expiry-date">
+                                Expires: {new Date(product.expiryDate).toLocaleDateString()}
+                            </p>
+                        )}
                     </div>
-                    <button className="remove-button" onClick={()=>handleDeleteProduct()}>
-                        Remove Product
-                    </button>
+                    
+                    <div className="discount-update-section">
+                        <h3>Update Discount</h3>
+                        <div className="discount-form">
+                            <div className="input-group">
+                                <input 
+                                    type="number" 
+                                    min="0"
+                                    max="100"
+                                    value={newDiscount}
+                                    onChange={(e) => setNewDiscount(e.target.value)}
+                                    placeholder="Enter discount percentage" 
+                                />
+                                <span className="percentage-symbol">%</span>
+                            </div>
+                            <button 
+                                className="update-discount-button"
+                                onClick={handleUpdateDiscount}
+                                disabled={isUpdating}
+                            >
+                                {isUpdating ? 'Updating...' : 'Update Discount'}
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div className="action-buttons">
+                        <button className="cancel-button" onClick={handleCancelClick}>
+                            Cancel
+                        </button>
+                        <button className="remove-button" onClick={handleDeleteProduct}>
+                            {isDeleting ? 'Removing...' : 'Remove Product'}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

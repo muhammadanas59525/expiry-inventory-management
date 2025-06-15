@@ -1,33 +1,85 @@
 import React from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { FaHome, FaShoppingCart, FaClipboardList, FaUser, FaCog, FaInfoCircle, FaSignOutAlt } from 'react-icons/fa';
 import './SidebarCust.css';
 
-const SidebarCust = () => {
+const SidebarCust = ({ user, onLogout }) => {
+  const navigate = useNavigate();
+
+  const handleNavigation = (path) => {
+    navigate(path);
+  };
+
   return (
-    <div className="sidebar">
-      <ul>
+    <div className="sidebar-cust">
+      <div className="sidebar-header">
+        <h2>EXIMS</h2>
+        {user && <p>{user.name}</p>}
+      </div>
+      
+      <ul className="sidebar-menu">
         <li>
-          <Link to="/customer/" className={({ isActive }) => (isActive ? 'active' : '')}>Home</Link>
+          <NavLink 
+            to="/customer/" 
+            className={({ isActive }) => isActive ? 'active' : ''}
+          >
+            <FaHome />
+            <span>Home</span>
+          </NavLink>
         </li>
         <li>
-          <Link to="/customer/cart" className={({ isActive }) => (isActive ? 'active' : '')}>Cart</Link>
+          <NavLink 
+            to="/customer/cart" 
+            className={({ isActive }) => isActive ? 'active' : ''}
+          >
+            <FaShoppingCart />
+            <span>Cart</span>
+          </NavLink>
         </li>
         <li>
-          <Link to="/customer/checkout" className={({ isActive }) => (isActive ? 'active' : '')}>Order</Link>
+          <NavLink 
+            to="/customer/checkout" 
+            className={({ isActive }) => isActive ? 'active' : ''}
+          >
+            <FaClipboardList />
+            <span>Orders</span>
+          </NavLink>
         </li>
         <li>
-          <Link to="/customer/profile" className={({ isActive }) => (isActive ? 'active' : '')}>Profile</Link>
+          <NavLink 
+            to="/customer/profile" 
+            className={({ isActive }) => isActive ? 'active' : ''}
+          >
+            <FaUser />
+            <span>Profile</span>
+          </NavLink>
         </li>
         <li>
-          <Link to="/customer/settings" className={({ isActive }) => (isActive ? 'active' : '')}>Settings</Link>
+          <NavLink 
+            to="/customer/settings" 
+            className={({ isActive }) => isActive ? 'active' : ''}
+          >
+            <FaCog />
+            <span>Settings</span>
+          </NavLink>
         </li>
         <li>
-          <Link to="/customer/about" className={({ isActive }) => (isActive ? 'active' : '')}>About</Link>
-        </li>
-        <li>
-          <Link to="/customer/other" className={({ isActive }) => (isActive ? 'active' : '')}>Other</Link>
+          <NavLink 
+            to="/customer/about" 
+            className={({ isActive }) => isActive ? 'active' : ''}
+          >
+            <FaInfoCircle />
+            <span>About</span>
+          </NavLink>
         </li>
       </ul>
+
+      <div className="sidebar-footer">
+        <button className="logout-button" onClick={onLogout}>
+          <FaSignOutAlt />
+          <span>Logout</span>
+        </button>
+      </div>
     </div>
   );
 };

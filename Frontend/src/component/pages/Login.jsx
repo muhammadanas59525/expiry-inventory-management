@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../utils/axios';
 import './Login.css';
 import { FaUserAlt } from "react-icons/fa";
 import { RiLockPasswordFill } from "react-icons/ri";
@@ -8,12 +8,14 @@ import { RiLockPasswordFill } from "react-icons/ri";
 const Login = ({ onLogin }) => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        username: '',
+        email: '',
         password: '',
-        userType: 'customer'
+        role: 'customer'
     });
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     const handleChange = (e) => {
         const { id, value } = e.target;
@@ -34,15 +36,16 @@ const Login = ({ onLogin }) => {
     const validateForm = () => {
         const newErrors = {};
         
-        if (!formData.username.trim()) newErrors.username = 'Username is required';
+        if (!formData.email.trim()) newErrors.email = 'Email is required';
         if (!formData.password.trim()) newErrors.password = 'Password is required';
         
         return newErrors;
     };
 
-    const handleLogin = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         
+        // Validate form 
         const validationErrors = validateForm();
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
@@ -50,57 +53,60 @@ const Login = ({ onLogin }) => {
         }
         
         setLoading(true);
+        setErrors({});
         
         try {
-            // Send username, password, and userType directly in the request body
-            const response = await axios.post('http://localhost:3000/api/user/login', {
-                username: formData.username,
+            console.log('Login data:', {
+                email: formData.email,
                 password: formData.password,
-                userType: formData.userType
+                role: formData.role
+            });
+            
+            const response = await axiosInstance.post('/users/login', {
+                email: formData.email,
+                password: formData.password,
+                role: formData.role
             });
             
             console.log("Login Response:", response.data);
             
-            if (response.data) {
-                // Store token
+            if (response.data && response.data.token) {
+                // Clear any existing data
+                localStorage.removeItem('token');
+                localStorage.removeItem('userInfo');
+                
+                // Store token and user info in localStorage
                 localStorage.setItem('token', response.data.token);
+                localStorage.setItem('userInfo', JSON.stringify(response.data.user));
                 
-                // Extract user info
-                const userInfo = {
-                    _id: response.data._id,
-                    username: response.data.username,
-                    email: response.data.email,
-                    userType: response.data.userType
-                };
+                // Call the onLogin prop with user data and token 
+                onLogin(response.data.user, response.data.token);
                 
-                // Store user info
-                localStorage.setItem('userInfo', JSON.stringify(userInfo));
+                // Get user role from response
+                const userRole = response.data.user.role;
                 
-                // Update auth state via props
-                if (onLogin) {
-                    onLogin(userInfo, response.data.token);
-                }
+                // Determine the redirect path based on user role
+                const redirectPath = userRole === 'shopkeeper' 
+                    ? '/shopkeeper' 
+                    : userRole === 'customer' 
+                    ? '/customer' 
+                    : userRole === 'admin' 
+                    ? '/admin' 
+                    : '/login';
                 
-                // Navigate based on user type
-                switch(response.data.userType) {
-                    case 'admin':
-                        navigate('/admin');
-                        break;
-                    case 'shopkeeper':
-                        navigate('/shopkeeper');
-                        break;
-                    case 'customer':
-                    default:
-                        navigate('/customer');
-                        break;
-                }
+                console.log('User successfully logged in. Redirecting to:', redirectPath);
+                
+                // Navigate immediately without timeout
+                navigate(redirectPath, { replace: true });
+            } else {
+                setErrors({ general: 'Login successful but token not received. Please try again.' });
             }
         } catch (error) {
             console.error('Login error:', error);
             
             if (error.response) {
                 if (error.response.status === 401) {
-                    setErrors({ general: 'Invalid username or password' });
+                    setErrors({ general: 'Invalid email or password' });
                 } else {
                     setErrors({ general: error.response.data.message || 'Login failed' });
                 }
@@ -116,7 +122,7 @@ const Login = ({ onLogin }) => {
 
     return (
         <div className="login">
-            <form onSubmit={handleLogin}>
+            <form onSubmit={handleSubmit}>
                 <div className="container">
                     <div className="logo">
                         <h1>EXIMS</h1>
@@ -125,17 +131,17 @@ const Login = ({ onLogin }) => {
                     {errors.general && <div className="error-message">{errors.general}</div>}
                     
                     <div className='inputbox'>
-                        <label htmlFor="username">Username:</label>
+                        <label htmlFor="email">Email:</label>
                         <input
-                            type="text"
-                            id="username"
-                            placeholder="Username"
-                            value={formData.username}
+                            type="email"
+                            id="email"
+                            placeholder="Email address"
+                            value={formData.email}
                             onChange={handleChange}
                             required
                         />
                         <FaUserAlt className='icon' />
-                        {errors.username && <span className="error">{errors.username}</span>}
+                        {errors.email && <span className="error">{errors.email}</span>}
                     </div>
                     
                     <div className='inputbox'>
@@ -153,15 +159,14 @@ const Login = ({ onLogin }) => {
                     </div>
                     
                     <div className='inputbox'>
-                        <label htmlFor="userType">User Type:</label>
+                        <label htmlFor="role">User Type:</label>
                         <select
-                            id="userType"
-                            value={formData.userType}
+                            id="role"
+                            value={formData.role}
                             onChange={handleChange}
                             required>
                             <option value="customer">Customer</option>
                             <option value="shopkeeper">Shopkeeper</option>
-                            <option value="admin">Admin</option>
                         </select>
                     </div>
                     

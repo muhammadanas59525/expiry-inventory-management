@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../utils/axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './ProfileCust.css';
@@ -46,6 +46,10 @@ const ProfileCust = ({ user }) => {
         reviewsWritten: 0
     });
 
+    // Add new state for addresses
+    const [addresses, setAddresses] = useState([]);
+    const [loadingAddresses, setLoadingAddresses] = useState(false);
+
     useEffect(() => {
         // Initialize with data from props if available
         if (user) {
@@ -70,6 +74,7 @@ const ProfileCust = ({ user }) => {
         
         fetchUserData();
         fetchOrders();
+        fetchAddresses();
     }, [user]);
 
     const fetchUserData = async () => {
@@ -82,10 +87,7 @@ const ProfileCust = ({ user }) => {
                 return;
             }
 
-            // Use the correct endpoint from your backend routes
-            const response = await axios.get('http://localhost:3000/api/profile', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await axiosInstance.get('/user/profile');
 
             if (response.data) {
                 const userData = response.data;
@@ -109,7 +111,7 @@ const ProfileCust = ({ user }) => {
             }
         } catch (err) {
             console.error("Error fetching user data:", err);
-            // Already using data from props, no need to update
+            toast.error("Failed to fetch profile data");
         } finally {
             setLoading(false);
         }
@@ -117,13 +119,7 @@ const ProfileCust = ({ user }) => {
 
     const fetchOrders = async () => {
         try {
-            const token = localStorage.getItem('token');
-            if (!token) return;
-
-            // This endpoint might need to be created in your backend
-            const response = await axios.get('http://localhost:3000/api/orders', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await axiosInstance.get('/user/orders');
 
             if (response.data && Array.isArray(response.data)) {
                 setOrders(response.data);
@@ -166,7 +162,6 @@ const ProfileCust = ({ user }) => {
             ];
             
             setOrders(sampleOrders);
-            
             setStats(prev => ({
                 ...prev,
                 orderCount: sampleOrders.length,
@@ -177,24 +172,33 @@ const ProfileCust = ({ user }) => {
         }
     };
 
+    const fetchAddresses = async () => {
+        try {
+            setLoadingAddresses(true);
+            const response = await axiosInstance.get('/user/addresses');
+            
+            if (response.data && response.data.success) {
+                setAddresses(response.data.addresses);
+            }
+        } catch (err) {
+            console.error("Error fetching addresses:", err);
+            toast.error("Failed to fetch addresses");
+        } finally {
+            setLoadingAddresses(false);
+        }
+    };
+
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
         try {
             setLoading(true);
-            const token = localStorage.getItem('token');
             
-            await axios.put('http://localhost:3000/api/profile', updatedProfile, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await axiosInstance.put('/user/profile', updatedProfile);
             
             // Update the local state with new profile details
             setProfileDetails(prev => ({
                 ...prev,
-                firstName: updatedProfile.firstName,
-                lastName: updatedProfile.lastName,
-                email: updatedProfile.email,
-                phone: updatedProfile.phone,
-                address: updatedProfile.address
+                ...updatedProfile
             }));
             
             setIsUpdatePopupOpen(false);
@@ -218,15 +222,11 @@ const ProfileCust = ({ user }) => {
         
         try {
             setLoading(true);
-            const token = localStorage.getItem('token');
             
-            await axios.put('http://localhost:3000/api/changePassword', 
-                {
-                    currentPassword: passwordData.currentPassword,
-                    newPassword: passwordData.newPassword
-                },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await axiosInstance.put('/user/change-password', {
+                currentPassword: passwordData.currentPassword,
+                newPassword: passwordData.newPassword
+            });
             
             setIsChangePasswordPopupOpen(false);
             setPasswordData({
@@ -259,6 +259,70 @@ const ProfileCust = ({ user }) => {
             default: return '';
         }
     };
+
+    // Update the addresses section in the render method
+    const renderAddressesSection = () => (
+        <div className="addresses">
+            <h2 className="section-title">Your Addresses</h2>
+            
+            {loadingAddresses ? (
+                <div className="loading">Loading addresses...</div>
+            ) : addresses.length === 0 ? (
+                <p>No addresses saved yet.</p>
+            ) : (
+                <div className="address-list">
+                    {addresses.map(address => (
+                        <div key={address._id} className="address-card">
+                            {address.isDefault && (
+                                <div className="default-badge">Default</div>
+                            )}
+                            <h3 className="address-type">Address</h3>
+                            <p className="address-text">
+                                {address.fullName}<br />
+                                {address.address}<br />
+                                {address.city}, {address.state} {address.postalCode}<br />
+                                {address.country}<br />
+                                {address.phone}
+                            </p>
+                            <div className="address-actions">
+                                <button 
+                                    className="address-btn edit-address"
+                                    onClick={() => {
+                                        setShippingInfo(address);
+                                        setShowAddressForm(true);
+                                    }}
+                                >
+                                    Edit
+                                </button>
+                                <button 
+                                    className="address-btn delete-address"
+                                    onClick={() => handleDeleteAddress(address._id)}
+                                >
+                                    Delete
+                                </button>
+                                {!address.isDefault && (
+                                    <button 
+                                        className="address-btn set-default"
+                                        onClick={() => handleSetDefaultAddress(address._id)}
+                                    >
+                                        Set as Default
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+            
+            <button 
+                className="add-address-btn"
+                onClick={() => setShowAddressForm(true)}
+            >
+                <i className="fas fa-plus"></i>
+                Add New Address
+            </button>
+        </div>
+    );
 
     return (
         <div className="profile-container">
@@ -431,37 +495,7 @@ const ProfileCust = ({ user }) => {
                         </div>
                     )}
                     
-                    {activeTab === 'addresses' && (
-                        <div className="addresses">
-                            <h2 className="section-title">Your Addresses</h2>
-                            
-                            <p>You can manage your shipping addresses in this section.</p>
-                            
-                            {/* This would be populated if you implement the address feature */}
-                            <div className="address-list">
-                                <div className="address-card default">
-                                    <div className="default-badge">Default</div>
-                                    <h3 className="address-type">Home</h3>
-                                    <p className="address-text">
-                                        {profileDetails.address || '123 Main St, Apt 4B, Anytown, CA 12345'}
-                                    </p>
-                                    <div className="address-actions">
-                                        <button className="address-btn edit-address">
-                                            Edit
-                                        </button>
-                                        <button className="address-btn delete-address">
-                                            Delete
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div className="add-address-btn">
-                                    <i className="fas fa-plus"></i>
-                                    Add New Address
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    {activeTab === 'addresses' && renderAddressesSection()}
                 </div>
             </div>
             

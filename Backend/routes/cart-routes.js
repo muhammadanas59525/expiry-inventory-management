@@ -1,22 +1,24 @@
 const express = require('express');
-const { 
-    getCart,
-    addToCart,
-    updateCartItem,
-    removeFromCart,
-    clearCart
-} = require('../controllers/shop/cart-controller');
-const { protect } = require('../middleware/auth.middleware');
-
 const router = express.Router();
+const CartController = require('../controllers/shop/cart-controller');
+const authMiddleware = require('../middleware/auth.middleware');
 
-// Protect all cart routes
-router.use(protect);
+// Apply auth middleware to all cart routes
+router.use(authMiddleware);
 
-router.get('/', getCart);
-router.post('/', addToCart);  // Changed from /add to match frontend
-router.put('/:itemId', updateCartItem);  // Changed from /update/:itemId
-router.delete('/:itemId', removeFromCart);  // Changed from /remove/:itemId
-router.delete('/clear', clearCart);
+// Get user's cart
+router.get('/', CartController.getCart);
+
+// Add item to cart
+router.post('/', CartController.addToCart);
+
+// Update cart item quantity
+router.put('/:itemId', CartController.updateCartItem);
+
+// Remove item from cart
+router.delete('/:itemId', CartController.removeFromCart);
+
+// Clear cart
+router.delete('/', CartController.clearCart);
 
 module.exports = router;

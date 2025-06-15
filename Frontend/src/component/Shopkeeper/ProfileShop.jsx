@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { FaUser, FaEnvelope, FaPhone, FaStore, FaMapMarkerAlt, FaEdit, FaSave, FaCamera } from "react-icons/fa";
 import "./ProfileShop.css";
-import axios from "axios";
+import axiosInstance from "../../utils/axios";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const ProfileShop = () => {
     const navigate = useNavigate();
@@ -14,7 +15,7 @@ const ProfileShop = () => {
         storeName: "",
         address: "",
         bio: "",
-        imageUrl: "https://www.gravatar.com/avatar/"  // More reliable default
+        imageUrl: "https://www.gravatar.com/avatar/"
     });
 
     const [editing, setEditing] = useState(false);
@@ -24,53 +25,32 @@ const ProfileShop = () => {
     const [success, setSuccess] = useState(false);
 
     useEffect(() => {
-        // Fetch profile data
         fetchProfile();
     }, []);
 
     const fetchProfile = async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('token');
+            const response = await axiosInstance.get('/user/profile');
             
-            if (!token) {
-                setError("Authentication required. Please log in.");
-                setLoading(false);
-                setTimeout(() => {
-                    navigate('/login');
-                }, 2000);
-                return;
+            if (response.data) {
+                const userData = response.data;
+                setProfile({
+                    firstName: userData.firstName || "",
+                    lastName: userData.lastName || "",
+                    email: userData.email || "",
+                    phone: userData.phone || "",
+                    storeName: userData.storeName || "",
+                    address: userData.address || "",
+                    bio: userData.bio || "No bio available",
+                    username: userData.username || "",
+                    imageUrl: userData.imageUrl || "https://www.gravatar.com/avatar/"
+                });
             }
-            
-            // Check token validity
-            console.log("Token being used:", token);
-            
-            const response = await axios.get('http://localhost:3000/api/user/profile', {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            
-            const userData = response.data;
-            console.log("Fetched user data:", userData);
-            
-            setProfile({
-                firstName: userData.firstName || "",
-                lastName: userData.lastName || "",
-                email: userData.email || "",
-                phone: userData.phone || "",
-                storeName: userData.storeName || "",
-                address: userData.address || "",
-                bio: userData.bio || "No bio available",
-                username: userData.username || "",
-                imageUrl: userData.imageUrl || "https://www.gravatar.com/avatar/"
-            });
-            
             setLoading(false);
         } catch (err) {
             console.error("Error fetching profile:", err);
-            console.error("Error details:", err.response?.data || "No response data");
-            setError("Failed to load profile data. " + (err.response?.data?.message || err.message));
+            setError("Failed to load profile data");
             setLoading(false);
         }
     };
@@ -97,42 +77,49 @@ const ProfileShop = () => {
         try {
             setLoading(true);
             setError(null);
-            const token = localStorage.getItem('token');
             
-            if (!token) {
-                setError("Authentication required. Please log in again.");
-                setTimeout(() => {
-                    navigate('/login');
-                }, 2000);
-                return;
+            const response = await axiosInstance.put('/user/profile', tempProfile);
+            
+            if (response.data) {
+                setProfile(response.data);
+                setEditing(false);
+                setSuccess(true);
+                toast.success('Profile updated successfully!');
+                setTimeout(() => setSuccess(false), 3000);
             }
-            
-            console.log("Sending profile update with data:", tempProfile);
-            
-            const response = await axios.put(
-                'http://localhost:3000/api/user/profile', // Changed from api/users/profile to match GET endpoint
-                tempProfile,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
-            
-            console.log("Update response:", response.data);
-            setProfile(response.data);
-            setEditing(false);
-            setSuccess(true);
-            setTimeout(() => setSuccess(false), 3000);
         } catch (err) {
             console.error("Error updating profile:", err);
-            if (err.response) {
-                console.error("Response data:", err.response.data);
-                console.error("Response status:", err.response.status);
-            }
-            setError("Failed to update profile: " + (err.response?.data?.message || err.message));
+            setError(err.response?.data?.message || "Failed to update profile");
+            toast.error(err.response?.data?.message || "Failed to update profile");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            const response = await axiosInstance.post('/user/upload-image', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            if (response.data && response.data.imageUrl) {
+                setProfile(prev => ({
+                    ...prev,
+                    imageUrl: response.data.imageUrl
+                }));
+                toast.success('Profile image updated successfully!');
+            }
+        } catch (err) {
+            console.error("Error uploading image:", err);
+            toast.error("Failed to upload profile image");
         }
     };
 
@@ -176,10 +163,16 @@ const ProfileShop = () => {
                             className="profile-image" 
                         />
                         {editing && (
-                            <div className="image-upload-overlay">
+                            <label className="image-upload-overlay">
                                 <FaCamera className="camera-icon" />
                                 <span>Change Photo</span>
-                            </div>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                    style={{ display: 'none' }}
+                                />
+                            </label>
                         )}
                     </div>
                     <h2>{profile.firstName} {profile.lastName}</h2>

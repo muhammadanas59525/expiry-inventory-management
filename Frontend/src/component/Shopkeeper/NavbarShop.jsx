@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
-import { FaSearch, FaBell, FaExclamationCircle } from 'react-icons/fa';
+import { FaSearch, FaBell, FaExclamationCircle, FaSignOutAlt, FaUser } from 'react-icons/fa';
 import './NavbarShop.css';
 
-const NavbarShop = ({ onSearch }) => {
+const NavbarShop = ({ onSearch, user, userType, onLogout }) => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [notificationCount, setNotificationCount] = useState(0);
   const [alertMessage, setAlertMessage] = useState('');
   const [showAlert, setShowAlert] = useState(false);
+  
+  const isAuthenticated = !!user;
 
   useEffect(() => {
+    console.log('NavbarShop - User:', user);
+    
     // Check for expired/soon-to-expire products
     checkNotifications();
-  }, []);
+  }, [user]);
 
   const checkNotifications = () => {
     // Mock product data with expiry dates
@@ -69,8 +73,8 @@ const NavbarShop = ({ onSearch }) => {
       }
       
       // If we're not already on the home page, navigate there with the search query
-      if (window.location.pathname !== '/') {
-        navigate('/?search=' + encodeURIComponent(searchQuery));
+      if (window.location.pathname !== '/shopkeeper') {
+        navigate('/shopkeeper?search=' + encodeURIComponent(searchQuery));
       }
     }
   };
@@ -88,21 +92,62 @@ const NavbarShop = ({ onSearch }) => {
   const handleCloseAlert = () => {
     setShowAlert(false);
   };
+  
+  const handleLogoutClick = () => {
+    if (onLogout) {
+      onLogout();
+    } else {
+      // Fallback if onLogout prop is not provided
+      localStorage.removeItem('token');
+      localStorage.removeItem('userInfo');
+      navigate('/login');
+    }
+  };
 
   return (
-
     <div className="NavBarShop">
-        <nav className="navbar">
+      <nav className="navbar">
         <h1>EXIMS</h1>
         <div className="search-container">
           <input 
             type="text" 
-            placeholder="Search products..." 
+            placeholder="Search products by name or category..." 
             value={searchQuery} 
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={handleKeyPress}
+            aria-label="Search products"
           />
-          <button onClick={handleSearch}><FaSearch /></button>
+          <button onClick={handleSearch} aria-label="Search">
+            <FaSearch />
+          </button>
+        </div>
+        
+        <div className="navbar-menu">
+          <Link to='/shopkeeper/' className="navbar-menu-item">Home</Link>
+          <Link to='/shopkeeper/erp' className="navbar-menu-item">Billing</Link>
+          <Link to='/shopkeeper/addproduct' className="navbar-menu-item">Add Product</Link>
+          
+          {isAuthenticated ? (
+            <>
+              <div className="user-info">
+                <Link to='/shopkeeper/profile' className="navbar-menu-item">
+                  <FaUser className="icon" /> {user?.name || 'Profile'}
+                </Link>
+              </div>
+              <button onClick={handleLogoutClick} className="navbar-menu-item logout-btn">
+                <FaSignOutAlt className="icon" /> Logout
+              </button>
+            </>
+          ) : (
+            <Link to='/login' className="navbar-menu-item">Login</Link>
+          )}
+          
+          <div className="notification-badge-container" onClick={handleViewNotifications}>
+            <FaBell />
+            {notificationCount > 0 && (
+              <span className="notification-badge">{notificationCount}</span>
+            )}
+          </div>
         </div>
         
         {showAlert && (
@@ -115,26 +160,8 @@ const NavbarShop = ({ onSearch }) => {
               </button>
               <button className="close-alert" onClick={handleCloseAlert}>×</button>
             </div>
-            
           </div>
         )}
-        
-        <div className="links">
-          <Link to='/shopkeeper/'>Home</Link>
-          <Link to='/shopkeeper/erp'>Billing</Link>
-          <Link to='/shopkeeper/addproduct'>Add Product</Link>
-          
-          
-          <button onClick={() => navigate('/login')}>Login</button>
-          {/* <button onClick={() => navigate('/register')}>Register</button> */}
-        </div>
-        <div className="notification-badge-container" onClick={handleViewNotifications}>
-            <FaBell />
-            {notificationCount > 0 && (
-              <span className="notification-badge">{notificationCount}</span>
-            )}
-          </div>
-          
       </nav>
       <div className="main-container">
         <Outlet/>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
 import './Upi.css';
 import { QRCodeSVG } from 'qrcode.react'; 
@@ -201,8 +201,8 @@ const Upi = () => {
                             </button>
                             <button 
                                 className="help-button"
-                                onClick={() => navigate('/help', '_blank')}
-                            >
+                                onClick={() => navigate('/customer/help')}  // Changed from '/help' to '/customer/help'
+                                >
                                 Need Help?
                             </button>
                         </div>

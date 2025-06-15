@@ -35,7 +35,7 @@ const SidebarShop = () => {
       const currentDate = new Date();
       const count = mockProducts.filter(product => {
         const expiryDate = new Date(product.expiryDate);
-        const daysUntilExpiry = Math.ceil((expiryDate - currentDate) / (1000 * 60 * 60 * 1000 * 24));
+        const daysUntilExpiry = Math.ceil((expiryDate - currentDate) / (1000 * 60 * 60 * 24));
         return daysUntilExpiry <= 10;
       }).length;
       
@@ -53,38 +53,38 @@ const SidebarShop = () => {
     <div className="sidebar-shop">
       <ul>
         <li>
-          <Link to="/shopkeeper/" className={({ isActive }) => (isActive ? 'active' : '')}>
+          <NavLink to="/shopkeeper/" className={({ isActive }) => isActive ? "active" : ""}>
             <FaHome className="icon" />
             Home
-          </Link>
+          </NavLink>
         </li>
         <li>
-          <Link to="/shopkeeper/inventory" className={({ isActive }) => (isActive ? 'active' : '')}>
+          <NavLink to="/shopkeeper/inventory" className={({ isActive }) => isActive ? "active" : ""}>
             <FaBox className="icon" /> Inventory
-          </Link>
+          </NavLink>
         </li>
         <li>
-          <Link to="/shopkeeper/addproduct" className={({ isActive }) => (isActive ? 'active' : '')}>
+          <NavLink to="/shopkeeper/addproduct" className={({ isActive }) => isActive ? "active" : ""}>
             <FaPlus className="icon" /> Add Product
-          </Link>
+          </NavLink>
         </li>
         <li>
-          <Link to="/shopkeeper/analysis" className={({ isActive }) => (isActive ? 'active' : '')}>
+          <NavLink to="/shopkeeper/analysis" className={({ isActive }) => isActive ? "active" : ""}>
             <FaPlus className="icon" /> Analysis
-          </Link>
+          </NavLink>
         </li>
         <li>
-          <Link to="/shopkeeper/profile" className={({ isActive }) => (isActive ? 'active' : '')}>
+          <NavLink to="/shopkeeper/profile" className={({ isActive }) => isActive ? "active" : ""}>
             <FaUser className="icon" /> Profile
-          </Link>
+          </NavLink>
         </li>
         <li>
-          <Link to="/shopkeeper/settings" className={({ isActive }) => (isActive ? 'active' : '')}>
+          <NavLink to="/shopkeeper/settings" className={({ isActive }) => isActive ? "active" : ""}>
             <FaCog className="icon" /> Settings
-          </Link>
+          </NavLink>
         </li>
         <li>
-          <Link to="/shopkeeper/notification" className={({ isActive }) => (isActive ? 'active' : '')}>
+          <NavLink to="/shopkeeper/notification" className={({ isActive }) => isActive ? "active" : ""}>
             <div className="notification-icon-container">
               <FaBell className="icon" />
               {notificationCount > 0 && (
@@ -92,17 +92,17 @@ const SidebarShop = () => {
               )}
             </div>
             Notifications
-          </Link>
+          </NavLink>
         </li>
         <li>
-          <Link to="/shopkeeper/about" className={({ isActive }) => (isActive ? 'active' : '')}>
+          <NavLink to="/shopkeeper/about" className={({ isActive }) => isActive ? "active" : ""}>
             <FaInfo className="icon" /> About
-          </Link>
+          </NavLink>
         </li>
         <li>
-          <Link to="/shopkeeper/other" className={({ isActive }) => (isActive ? 'active' : '')}>
+          <NavLink to="/shopkeeper/other" className={({ isActive }) => isActive ? "active" : ""}>
             <FaEllipsisH className="icon" /> Other
-          </Link>
+          </NavLink>
         </li>
       </ul>
     </div>

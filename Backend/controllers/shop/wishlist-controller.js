@@ -1,10 +1,11 @@
 const Wishlist = require('../../models/wishlist.model');
-const Product = require('../../models/product.model');
+const Product = require('../../models/Product');
+const User = require('../../models/User');
 
 // Get wishlist
 const getWishlist = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const userId = req.user.id;
         
         // Find user wishlist or create if not exists
         let wishlist = await Wishlist.findOne({ user: userId }).populate({
@@ -44,8 +45,8 @@ const getWishlist = async (req, res) => {
 // Add to wishlist
 const addToWishlist = async (req, res) => {
     try {
-        const userId = req.user._id;
         const { productId } = req.body;
+        const userId = req.user.id;
         
         // Validate request
         if (!productId) {
@@ -123,8 +124,8 @@ const addToWishlist = async (req, res) => {
 // Remove from wishlist
 const removeFromWishlist = async (req, res) => {
     try {
-        const userId = req.user._id;
         const { itemId } = req.params;
+        const userId = req.user.id;
         
         // Find wishlist
         const wishlist = await Wishlist.findOne({ user: userId });
@@ -136,9 +137,16 @@ const removeFromWishlist = async (req, res) => {
         }
         
         // Remove item
-        wishlist.items = wishlist.items.filter(item => 
-            item._id.toString() !== itemId
-        );
+        // Check if itemId is a product ID or wishlist item ID
+        const isProductId = wishlist.items.some(item => item.product.toString() === itemId);
+        
+        if (isProductId) {
+            // Filter by product ID
+            wishlist.items = wishlist.items.filter(item => item.product.toString() !== itemId);
+        } else {
+            // Filter by wishlist item ID
+            wishlist.items = wishlist.items.filter(item => item._id.toString() !== itemId);
+        }
         
         await wishlist.save();
         
@@ -155,8 +163,40 @@ const removeFromWishlist = async (req, res) => {
     }
 };
 
+// Clear wishlist
+const clearWishlist = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        
+        // Find wishlist
+        const wishlist = await Wishlist.findOne({ user: userId });
+        if (!wishlist) {
+            return res.status(404).json({
+                success: false,
+                message: 'Wishlist not found'
+            });
+        }
+        
+        // Clear wishlist
+        wishlist.items = [];
+        await wishlist.save();
+        
+        res.json({
+            success: true,
+            message: 'Wishlist cleared successfully'
+        });
+    } catch (err) {
+        console.error('Error clearing wishlist:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Error clearing wishlist'
+        });
+    }
+};
+
 module.exports = {
     getWishlist,
     addToWishlist,
-    removeFromWishlist
+    removeFromWishlist,
+    clearWishlist
 };

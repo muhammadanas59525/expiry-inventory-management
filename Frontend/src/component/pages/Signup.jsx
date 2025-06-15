@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaUserAlt, FaEnvelope, FaPhone, FaStore, FaMapMarkerAlt } from 'react-icons/fa';
 import { RiLockPasswordFill } from 'react-icons/ri';
-import axios from 'axios'; 
+import axios from 'axios';
+import { API_BASE_URL } from '../../config/api';
 import './Signup.css';
 
 const Signup = () => {
@@ -13,7 +14,6 @@ const Signup = () => {
         lastName: '',
         email: '',
         phone: '',
-        username: '',
         password: '',
         confirmPassword: '',
         storeName: '',
@@ -51,8 +51,6 @@ const Signup = () => {
             newErrors.email = 'Email is invalid';
         }
         
-        if (!formData.username.trim()) newErrors.username = 'Username is required';
-        
         if (!formData.password.trim()) {
             newErrors.password = 'Password is required';
         } else if (formData.password.length < 6) {
@@ -62,11 +60,20 @@ const Signup = () => {
         if (formData.password !== formData.confirmPassword) {
             newErrors.confirmPassword = 'Passwords do not match';
         }
+
+        if (!formData.phone.trim()) {
+            newErrors.phone = 'Phone number is required';
+        } else if (!/^\d{10}$/.test(formData.phone.trim())) {
+            newErrors.phone = 'Phone number must be 10 digits';
+        }
+
+        if (!formData.address.trim()) {
+            newErrors.address = 'Address is required';
+        }
         
         // Additional validation for shopkeeper
         if (userType === 'shopkeeper') {
             if (!formData.storeName.trim()) newErrors.storeName = 'Store name is required';
-            if (!formData.address.trim()) newErrors.address = 'Address is required';
         }
         
         return newErrors;
@@ -84,85 +91,32 @@ const Signup = () => {
         setLoading(true);
         
         try {
-            // Prepare user data based on user model
+            // Prepare user data based on backend User model
             const userData = {
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                email: formData.email,
-                phone: formData.phone || undefined, // Optional field
-                username: formData.username,
+                name: `${formData.firstName} ${formData.lastName}`.trim(),
+                email: formData.email.trim().toLowerCase(),
                 password: formData.password,
-                userType: userType
+                role: userType,
+                phone: formData.phone.trim(),
+                address: formData.address.trim()
             };
             
-            // Add shopkeeper specific fields if applicable
-            if (userType === 'shopkeeper') {
-                userData.storeName = formData.storeName;
-                userData.address = formData.address;
-            }
+            const registerEndpoint = `${API_BASE_URL}/users/register`;
+            console.log('Sending registration request to:', registerEndpoint);
+            console.log('Registration data:', userData);
             
-            // Backend API call (commented for now)
+            const response = await axios.post(registerEndpoint, userData);
             
-            const response = await axios.post('http://localhost:3000/api/user/register', userData);
-            
-            // If successful, store token and user info
+            console.log('Registration successful:', response.data);
+
+            // Store token and user info
             if (response.data && response.data.token) {
                 localStorage.setItem('token', response.data.token);
-                localStorage.setItem('userType', response.data.userType);
-                localStorage.setItem('userInfo', JSON.stringify({
-                    username: response.data.username,
-                    firstName: response.data.firstName,
-                    lastName: response.data.lastName
-                }));
+                localStorage.setItem('userType', response.data.user.role);
+                localStorage.setItem('userInfo', JSON.stringify(response.data.user));
             }
             
-            
-            // Mock successful API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // Store in localStorage for development purposes
-            // In production, this should be handled by the backend with proper auth
-            const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
-            
-            // Check for duplicate username or email
-            const userExists = existingUsers.some(user => 
-                user.username === formData.username || user.email === formData.email
-            );
-            
-            if (userExists) {
-                const isDuplicateUsername = existingUsers.some(user => user.username === formData.username);
-                throw new Error(isDuplicateUsername ? 'Username already exists' : 'Email already in use');
-            }
-            
-            // Create new user object
-            const newUser = {
-                _id: Date.now().toString(), // Mock ID
-                ...userData,
-                createdAt: new Date().toISOString()
-            };
-            
-            // Don't store password in plain text (this is just for demo)
-            // In a real app, password would be hashed on the server
-            
-            // Save to localStorage
-            existingUsers.push(newUser);
-            localStorage.setItem('users', JSON.stringify(existingUsers));
-            
-            // Show success message
             setShowSuccessMessage(true);
-            
-            // Mock token for development
-            localStorage.setItem('token', `mock-jwt-token-${newUser._id}`);
-            localStorage.setItem('userType', userType);
-            localStorage.setItem('userInfo', JSON.stringify({
-                username: formData.username,
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                ...(userType === 'shopkeeper' && {
-                    storeName: formData.storeName,
-                    address: formData.address
-                })
-            }));
             
             // Redirect after a delay
             setTimeout(() => {
@@ -170,7 +124,24 @@ const Signup = () => {
             }, 2000);
             
         } catch (error) {
-            const errorMessage = error.response?.data?.message || error.message || 'Registration failed';
+            console.error('Registration error:', error);
+            let errorMessage = 'Registration failed. Please try again.';
+            
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                errorMessage = error.response.data.message || errorMessage;
+                console.error('Error response:', error.response.data);
+            } else if (error.request) {
+                // The request was made but no response was received
+                errorMessage = 'No response from server. Please try again.';
+                console.error('Error request:', error.request);
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                errorMessage = error.message;
+                console.error('Error message:', error.message);
+            }
+            
             setErrors({ general: errorMessage });
         } finally {
             setLoading(false);
@@ -262,27 +233,15 @@ const Signup = () => {
                             <input 
                                 type="tel" 
                                 id="phone" 
-                                placeholder="Phone Number" 
+                                placeholder="Phone Number (10 digits)" 
                                 value={formData.phone}
                                 onChange={handleChange}
+                                pattern="[0-9]{10}"
+                                required
                             />
                             <FaPhone className='icon' />
                             {errors.phone && <span className="error">{errors.phone}</span>}
                         </div>
-                    </div>
-                    
-                    <div className='inputbox'>
-                        <label htmlFor="username">Username:</label>
-                        <input 
-                            type="text" 
-                            id="username" 
-                            placeholder="Choose a username" 
-                            value={formData.username}
-                            onChange={handleChange}
-                            required 
-                        />
-                        <FaUserAlt className='icon' />
-                        {errors.username && <span className="error">{errors.username}</span>}
                     </div>
                     
                     <div className="form-row">
@@ -291,9 +250,10 @@ const Signup = () => {
                             <input 
                                 type="password" 
                                 id="password" 
-                                placeholder="Password" 
+                                placeholder="Password (min 6 characters)" 
                                 value={formData.password}
                                 onChange={handleChange}
+                                minLength="6"
                                 required 
                             />
                             <RiLockPasswordFill className='icon' />
@@ -315,36 +275,34 @@ const Signup = () => {
                         </div>
                     </div>
                     
+                    <div className='inputbox'>
+                        <label htmlFor="address">Address:</label>
+                        <input 
+                            type="text" 
+                            id="address" 
+                            placeholder="Full Address" 
+                            value={formData.address}
+                            onChange={handleChange}
+                            required
+                        />
+                        <FaMapMarkerAlt className='icon' />
+                        {errors.address && <span className="error">{errors.address}</span>}
+                    </div>
+                    
                     {userType === 'shopkeeper' && (
-                        <>
-                            <div className='inputbox'>
-                                <label htmlFor="storeName">Store Name:</label>
-                                <input 
-                                    type="text" 
-                                    id="storeName" 
-                                    placeholder="Store Name" 
-                                    value={formData.storeName}
-                                    onChange={handleChange}
-                                    required
-                                />
-                                <FaStore className='icon' />
-                                {errors.storeName && <span className="error">{errors.storeName}</span>}
-                            </div>
-                            
-                            <div className='inputbox'>
-                                <label htmlFor="address">Store Address:</label>
-                                <input 
-                                    type="text" 
-                                    id="address" 
-                                    placeholder="Store Address" 
-                                    value={formData.address}
-                                    onChange={handleChange}
-                                    required
-                                />
-                                <FaMapMarkerAlt className='icon' />
-                                {errors.address && <span className="error">{errors.address}</span>}
-                            </div>
-                        </>
+                        <div className='inputbox'>
+                            <label htmlFor="storeName">Store Name:</label>
+                            <input 
+                                type="text" 
+                                id="storeName" 
+                                placeholder="Store Name" 
+                                value={formData.storeName}
+                                onChange={handleChange}
+                                required
+                            />
+                            <FaStore className='icon' />
+                            {errors.storeName && <span className="error">{errors.storeName}</span>}
+                        </div>
                     )}
                     
                     <div className="button">

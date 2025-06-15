@@ -406,3 +406,227 @@ button[onClick*="setRows"] {
         padding: 6px 15px;
     }
 }
+
+/* Product autocomplete styling */
+.product-autocomplete {
+    position: relative;
+    width: 100%;
+}
+
+.product-suggestions {
+    position: absolute;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.suggestion-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.suggestion-item:hover {
+    background-color: #f4f4f4;
+}
+
+.suggestion-item .low-stock {
+    color: #d9534f;
+    font-size: 0.85em;
+    margin-left: 5px;
+}
+
+/* Bill summary styling */
+.bill-summary {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 15px 20px;
+    margin: 20px 0;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #28a745;
+}
+
+.bill-summary h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #343a40;
+}
+
+/* Process bill button */
+.process-bill-button {
+    background-color: #28a745;
+    color: #fff;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.process-bill-button:hover {
+    background-color: #218838;
+}
+
+.process-bill-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* Form styling enhancements */
+.addtable {
+    margin-bottom: 20px;
+}
+
+.tableinput input,
+.tableinput select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 100%;
+    font-size: 14px;
+}
+
+.tableinput input:focus,
+.tableinput select:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.tableinput input:read-only {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+}
+
+/* Enhance the table row styling */
+.tablerow {
+    display: grid;
+    grid-template-columns: 0.5fr 2fr 0.8fr 0.8fr 0.8fr 1fr 1.5fr;
+    padding: 10px 15px;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.tablerow:hover {
+    background-color: #f8f9fa;
+}
+
+.header {
+    background-color: #343a40;
+    color: white;
+    font-weight: bold;
+    border-radius: 4px 4px 0 0;
+}
+
+.action-buttons button {
+    margin-right: 5px;
+    padding: 6px 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.action-buttons button:last-child {
+    background-color: #dc3545;
+}
+
+.action-buttons button:hover {
+    opacity: 0.9;
+}
+
+/* Add these styling rules for the Quagga barcode scanner */
+
+/* Scanner modal styling */
+.scanner-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.scanner-content {
+    background-color: #fff;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.scanner-header {
+    padding: 15px;
+    text-align: center;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.scanner-header h3 {
+    margin: 0 0 5px;
+    color: #343a40;
+}
+
+.scanner-header p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.viewport {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+    background-color: #000;
+}
+
+.scanner-controls {
+    padding: 15px;
+    display: flex;
+    justify-content: center;
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+.close-scanner-btn {
+    padding: 8px 16px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 14px;
+}
+
+.close-scanner-btn:hover {
+    background-color: #5a6268;
+}
+
+/* Canvas styling for Quagga */
+canvas {
+    position: absolute;
+}
+
+canvas.drawingBuffer {
+    position: absolute;
+    top: 0;
+    left: 0;
+}

@@ -5,7 +5,7 @@ const BASE_URL = 'http://localhost:3000';
 
 export const addProduct = async (productData) => {
     try {
-        const response = await axios.post(`${BASE_URL}/api/products`, productData);
+        const response = await axios.post(`${BASE_URL}/api/shop/products`, productData);
         return response.data;
     } catch (error) {
         console.error('Error adding product:', error);
@@ -15,7 +15,7 @@ export const addProduct = async (productData) => {
 
 export const fetchProducts = async () => {
     try {
-        const response = await axios.get(`${BASE_URL}/api/products`);
+        const response = await axios.get(`${BASE_URL}/api/shop/products`);
         return response.data;
     } catch (error) {
         console.error('Error fetching products:', error);

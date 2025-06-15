@@ -13,3 +13,26 @@
     padding: 0;
     position: relative;
 }
+
+.shop-content {
+    margin-left: 1px; /* Match sidebar width */
+    padding: 20px;
+    padding-top: 80px; /* Space for navbar */
+    width: calc(100% - 200px);
+    box-sizing: border-box;
+    min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+    .shop-content {
+        margin-left: 180px;
+        width: calc(100% - 180px);
+    }
+}
+
+@media (max-width: 480px) {
+    .shop-content {
+        margin-left: 160px;
+        width: calc(100% - 160px);
+    }
+}

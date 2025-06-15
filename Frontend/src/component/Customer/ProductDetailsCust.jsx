@@ -28,7 +28,19 @@ const ProductDetailsCust = () => {
                 try {
                     setLoading(true);
                     console.log("Fetching product with ID:", id);
-                    const response = await axios.get(`http://localhost:3000/api/products/get/${id}`);
+                    
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        setError("Authentication required. Please login to view product details.");
+                        setLoading(false);
+                        return;
+                    }
+                    
+                    const response = await axios.get(`http://localhost:3000/api/shop/products/${id}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
                     
                     if (response.data.success) {
                         console.log("Product data fetched:", response.data.data);
