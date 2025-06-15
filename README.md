@@ -37,12 +37,12 @@ The **Expiry Inventory Management System (EXIMS)** is a web-based inventory and 
 
 ## 🧩 Folder Structure
 
-📁 expiry-inventory-management/
-├── 📁 client/ # React frontend
+expiry-inventory-management/
+├── client/ # React frontend
 │ └── src/
-│ ├── components/ # UI Components
+│ ├── components/ # UI components
 │ └── pages/ # Pages for each user role
-├── 📁 server/ # Node.js backend
+├── server/ # Node.js backend
 │ ├── controllers/ # Route logic
 │ ├── models/ # Mongoose schemas
 │ ├── routes/ # API endpoints
@@ -50,6 +50,8 @@ The **Expiry Inventory Management System (EXIMS)** is a web-based inventory and 
 ├── .gitignore
 ├── README.md
 └── package.json
+
+---
 
 ## 🛠️ Setup Instructions
 **Backend:**
@@ -63,6 +65,8 @@ npm install
 npm start
 
 (Make sure MongoDB is running and configured (either locally or via Atlas). If .env files are needed for database URL or port, create them accordingly.)
+
+---
 
 ## 👥 User Roles
 
@@ -91,7 +95,6 @@ npm start
 
 - [Anujith K](https://github.com/AnujithK) – VDA21CS013  
 - [Sayooj V P](https://github.com/SayoojVP) – VDA21CS057  
-- [Nayanthara Vivek](https://github.com/NayantharaVivek) – VDA20CS043  
 
 **Department of Computer Science & Engineering**  
 College of Engineering Vadakara, Kerala  
